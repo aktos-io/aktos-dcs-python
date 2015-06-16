@@ -2,8 +2,8 @@
 
 ### Dependencies
 
-Platforms: Any
-Tested on: Windows, Linux
+* Platforms: Any
+* Tested on: Windows, Linux
 
 ```
 # easy_install pyzmq
