@@ -1,5 +1,13 @@
-# aktos-dcs
-Distributed Control System Library for Python
+#Distributed Control System Library for Python
+
+### Dependencies
+
+Platforms: Any
+Tested on: Windows, Linux
+
+```
+# easy_install pyzmq
+```
 
 Testing actor model in the same process:
 
