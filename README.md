@@ -72,7 +72,7 @@ Should work on any platform, tested on:
 * Windows XP
 * Linux (Debian, Ubuntu)
 
-### Dependencies 
+### Install 
 
 This library depends on Gevent 1.0.2 and ZeroMQ 14.6.0 or later.
 
