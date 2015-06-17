@@ -6,15 +6,15 @@ from aktos_dcs.Messages import *
 
 class Ponger(Actor):
     def handle_PongMessage(self, msg):
-        print "Pong got ping message:", msg.text
-        sleep(5)
+        print "Pong got pong message:", msg.text
+        sleep(2)
         self.send(PingMessage(text="Hello pinger!"))
 
 
 class Pinger(Actor):
     def handle_PingMessage(self, msg):
-        print "Ping got pong message: ", msg.text
-        sleep(5)
+        print "Ping got ping message: ", msg.text
+        sleep(2)
         self.send(PongMessage(text="Hello ponger!"))
 
 

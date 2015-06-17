@@ -10,98 +10,115 @@ import time
 
 class NetworkActor(Actor):
 
-    def __init__(self, host="localhost", port=5012):
+    def __init__(self, host="localhost", rx_port=5013, tx_port=5012):
         self.context = zmq.Context()
         self.subscriber = self.context.socket(zmq.SUB)
-        self.introducer = self.context.socket(zmq.PUB)
+        self.broker_sub = self.context.socket(zmq.SUB)
+        self.broker_pub = self.context.socket(zmq.PUB)
         self.publisher = self.context.socket(zmq.PUB)
 
         self.host = host
-        self.default_port = port
+        self.rx_port = rx_port
+        self.tx_port = tx_port
 
-        # everyone listens to the introducer
-        self.subscriber.connect("tcp://localhost:%d" % self.default_port)
+
         self.subscriber.setsockopt(zmq.SUBSCRIBE, '')
-        gevent.spawn(self.__receiver__)
+        self.broker_sub.setsockopt(zmq.SUBSCRIBE, '')
 
-        # new object will bind to a random port
+        # new actor will bind to a random port
         self.port = self.publisher.bind_to_random_port(addr="tcp://*")
+        print "this actor's default publish port is: ", self.port
 
         # peers known so far
         self.peers = [self.port]
 
-        self.discover()
+        self.rx_addr = "tcp://%s:%d" % (self.host, self.rx_port)
+        self.tx_addr = "tcp://%s:%d" % (self.host, self.tx_port)
 
-        self.g_syncer = None
+        self.introduction = "NOK" # not okay, introduce itself
+
+        try:
+            self.create_broker(watch=False)
+        except:
+            print "connecting already created broker"
+            # there is a broker_sub binded on rx_port already
+            # connect it, send your publisher port, get other's publisher port
+            self.broker_pub.connect(self.rx_addr)
+            self.broker_sub.connect(self.tx_addr)
+
+            gevent.spawn(self.broker_receiver)
+
+            print "there was a broker, this actor introducing itself"
+
+            gevent.sleep(3)
+            for i in range(10):
+                print "trial ", i, "..."
+                self.broker_pub.send(pack(NetworkActorMessage(peers=self.peers)))
+                if self.introduction == "OK":
+                    break
+                gevent.sleep(0.01)
+
+            print "in case of failure of the broker, watching..."
+            gevent.spawn(self.create_broker, watch=True)
+
+        gevent.spawn(self.__receiver__)
+
         super(NetworkActor, self).__init__()
 
 
 
-    def discover(self):
-        # introduce itself to others
-        self.introduction_is_successfull = False
-        while not self.introduction_is_successfull:
+    def create_broker(self, watch=False):
+        while True:
             try:
-                self.introducer.bind("tcp://*:%d" % self.default_port)
-                #print "started to listen!"
-                while True:
-                    self.introducer.send(pack(NetworkActorMessage(peers=self.peers)))
-                    if self.introduction_is_successfull:
-                        break
-                    gevent.sleep(1)
-                self.introducer.close()
-            except:
-                pass
+                rx_addr = "tcp://%s:%d" % ("*", self.rx_port)
+                tx_addr = "tcp://%s:%d" % ("*", self.tx_port)
+
+                self.broker_sub.bind(rx_addr)
+                self.broker_pub.bind(tx_addr)
+                if not watch:
+                    gevent.spawn(self.broker_receiver)
+                print "this actor created a broker"
+
+                # tell the others about known peers
+                while self.introduction != "OK":
+                    self.broker_pub.send(pack(NetworkActorMessage(peers=self.peers)))
+                    gevent.sleep(0.01)
+
+                break  # quit trying to create a broker
+            except Exception as e:
+                print e.message
+                if not watch:
+                    raise
+                gevent.sleep(10)  # TODO: decrease this time
+
             gevent.sleep()
+
+    def broker_receiver(self):
+        print "broker receiver called!"
+        while True:
+            message = self.broker_sub.recv()
+            self.call_the_handler(message)
 
 
     def handle_NetworkActorMessage(self, msg):
-        if msg.peers[0] == self.port:
-            print "this actor successfully introduced itself"
-            self.introduction_is_successfull = True
-        else:
-            for port in msg.peers:
-                if port not in self.peers:
-                    print "discovered another actor binded to port %d" % port
-                    self.subscriber.connect("tcp://localhost:%d" % port)
-                    self.peers.append(port)
-                    print "subscriber is connected to the new actor"
 
-                    print "msg.peers: ", msg.peers
+        print "debug: NetworkActorMessage received:", msg.peers
 
-        if msg.broadcasting:
-            try:
-                print "killing broadcaster"
-                self.g_syncer.kill()
-            except:
-                pass
+        if self.port in msg.peers:
+            self.introduction = "OK"
 
-        if not self.g_syncer:
-            if set(msg.peers) != set(self.peers):
-                print "synchronizing peers"
-                self.g_syncer = gevent.spawn(self.__syncer__)
+        for port in msg.peers:
+            if port not in self.peers:
+                print "discovered another actor binded to port %d" % port
+                self.subscriber.connect("tcp://localhost:%d" % port)
+                self.peers.append(port)
+                print "subscriber is connected to the new actor"
 
-    def __syncer__(self):
-        try:
-            while True:
-                try:
-                    #print "started sync!"
-                    self.introducer = self.context.socket(zmq.PUB)
-                    self.introducer.bind("tcp://*:%d" % self.default_port)
-                    while True:
-                        self.introducer.send(pack(NetworkActorMessage(peers=self.peers, broadcasting=True)))
-                        gevent.sleep(1)
-                    self.introducer.close()
-                    #print "killing itself!"
-                    gevent.getcurrent().kill()
-                except Exception as e:
-                    #print "syncer exception:" + e.message
-                    pass
+                print "msg.peers: ", msg.peers
 
-                gevent.sleep(0.1)
-        except:
-            #print "syncer killed??"
-            self.introducer.close()
+        if set(msg.peers) != set(self.peers):
+            print "informing others about known peers so far"
+            self.broker_pub.send(pack(NetworkActorMessage(peers=self.peers)))
 
     def network_receive(self, msg):
         pass
@@ -111,6 +128,7 @@ class NetworkActor(Actor):
             #print "started to receive"
             while True:
                 message = self.subscriber.recv()
+                ###print "got message:", message
                 self.call_the_handler(message)
                 gevent.sleep(0)
         finally:
@@ -153,19 +171,3 @@ class ProxyActor(NetworkActor):
         #print "proxy (id: %d) received msg: id: %d" % (id(self), msg.sender )
         self.network_send(msg)
 
-
-if __name__ == "__main__":
-
-    class TestNetworkActor(NetworkActor):
-
-        def handle_IoMessage(self, msg):
-            print "gevent network actor received: ", msg.nereden
-
-    a = TestNetworkActor()
-
-    for i in range(1000):
-        print "sending: this is gevent network actor"
-        a.network_send("this is gevent network actor")
-        gevent.sleep(10)
-
-    gevent.joinall([a])
