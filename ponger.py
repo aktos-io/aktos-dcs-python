@@ -6,9 +6,9 @@ from aktos_dcs.Messages import *
 
 class Ponger(Actor):
     def handle_PongMessage(self, msg):
-        print "Pong got pong message:", msg.text, msg.timestamp
+        print "Ponger got pong message:", msg.text, msg.timestamp
         sleep(2)
-        self.send(PingMessage(text="Hello pinger!"))
+        self.send(PingMessage(text="Hello pinger, this is ponger 1!"))
 
 if __name__ == "__main__":
     ProxyActor()
