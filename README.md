@@ -2,6 +2,8 @@
 
 Gevent based actor model (inspired from Erlang) used for concurrency. API is heavily inspired from [pysage](https://github.com/realtime-system/pysage).  
 
+aktos-dcs uses "addressing broker" to solve "dynamic service discovery" problem. The 'addressing broker' is created and destroyed dynamically by joiner actors upon demand. 
+
 
 ### Actors in the same process
 
