@@ -123,6 +123,7 @@ class ProxyActor(Actor):
         print "broker receiver called!"
         while True:
             message = self.broker_sub.recv()
+            print "broker got message", message
             try:
                 m = unpack(message)
                 if type(m) == type(NetworkActorMessage()):
@@ -153,8 +154,11 @@ class ProxyActor(Actor):
     def proxy_client_receiver(self):
         while True:
             message = self.proxy_client_sub.recv()
+            print "proxy client got message: ", message
             try:
-                self.send(unpack(message))
+                m = unpack(message)
+                self.send(m)
+                self.network_send(m)
             except Exception as e:
                 print "exception in proxy_client_receiver: ", e.message
 
