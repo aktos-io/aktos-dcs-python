@@ -124,7 +124,7 @@ class ProxyActor(Actor):
         print "broker receiver called!"
         while True:
             message = self.broker_sub.recv()
-            print "broker got message", message
+            #print "broker got message", message
             try:
                 m = unpack(message)
                 self.network_send(m)
