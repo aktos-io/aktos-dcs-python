@@ -5,65 +5,79 @@ import gevent
 from cca_messages import *
 from gevent_actor import Actor
 import zmq.green as zmq
-import time
 
+class ProxyActor(Actor):
 
-class NetworkActor(Actor):
+    def __init__(self, broker_host="localhost", rx_port=5013, tx_port=5012):
+        #super(ProxyActor, self).__init__()
+        Actor.__init__(self)
 
-    def __init__(self, host="localhost", rx_port=5013, tx_port=5012):
-        self.context = zmq.Context()
-        self.subscriber = self.context.socket(zmq.SUB)
-        self.broker_sub = self.context.socket(zmq.SUB)
-        self.broker_pub = self.context.socket(zmq.PUB)
-        self.publisher = self.context.socket(zmq.PUB)
-
-        self.host = host
+        self.broker_host = broker_host
         self.rx_port = rx_port
         self.tx_port = tx_port
 
+        self.context = zmq.Context()
+        self.subscriber = self.context.socket(zmq.SUB)
+        self.publisher = self.context.socket(zmq.PUB)
+
+        self.broker_sub = self.context.socket(zmq.SUB)
+        self.broker_pub = self.context.socket(zmq.PUB)
+
+        self.broker_client_sub = self.context.socket(zmq.SUB)
+        self.broker_client_pub = self.context.socket(zmq.PUB)
+
+        self.proxy_client_sub = self.context.socket(zmq.SUB)
+        self.proxy_client_pub = self.context.socket(zmq.PUB)
 
         self.subscriber.setsockopt(zmq.SUBSCRIBE, '')
         self.broker_sub.setsockopt(zmq.SUBSCRIBE, '')
+        self.broker_client_sub.setsockopt(zmq.SUBSCRIBE, '')
+        self.proxy_client_sub.setsockopt(zmq.SUBSCRIBE, '')
+
+        gevent.spawn(self.broker_client_receiver)
+        gevent.spawn(self.__receiver__)
+        gevent.spawn(self.broker_receiver)
+        gevent.spawn(self.proxy_client_receiver)
+
 
         # new actor will bind to a random port
         self.port = self.publisher.bind_to_random_port(addr="tcp://*")
-        print "this actor's default publish port is: ", self.port
+        print "this actor's own publish port is: ", self.port
 
         # peers known so far
-        self.peers = [self.port]
+        self.known_publishers = ["tcp://%s:%d" % ("localhost", self.port)]
+        if self.broker_host != "localhost":
+            self.known_publishers.append("tcp://%s:%d" % (self.broker_host, self.port))
 
-        self.rx_addr = "tcp://%s:%d" % (self.host, self.rx_port)
-        self.tx_addr = "tcp://%s:%d" % (self.host, self.tx_port)
 
-        self.introduction = "NOK" # not okay, introduce itself
+        self.introduction = "NOK"  # not okay, introduce itself
+        # is this address broker's server node in localhost?
+        self.is_ab_server_node = False
 
         try:
             self.create_broker(watch=False)
         except:
-            print "connecting already created broker"
-            # there is a broker_sub binded on rx_port already
-            # connect it, send your publisher port, get other's publisher port
-            self.broker_pub.connect(self.rx_addr)
-            self.broker_sub.connect(self.tx_addr)
+            gevent.spawn(self.create_broker, watch=True)
 
-            gevent.spawn(self.broker_receiver)
+        print "connecting to the local address broker"
+        self.broker_client_pub.connect("tcp://%s:%d" % ("localhost", self.rx_port))
+        self.broker_client_sub.connect("tcp://%s:%d" % ("localhost", self.tx_port))
 
-            print "there was a broker, this actor introducing itself"
+        if self.broker_host != "localhost":
+            print "connecting to the broker host"
+            self.proxy_client_pub.connect("tcp://%s:%d" % (self.broker_host, self.rx_port))
+            self.proxy_client_sub.connect("tcp://%s:%d" % (self.broker_host, self.tx_port))
 
-            gevent.sleep(3)
+        if not self.is_ab_server_node:
+            print "this actor introducing itself to the local broker"
             for i in range(10):
                 print "trial ", i, "..."
-                self.broker_pub.send(pack(NetworkActorMessage(peers=self.peers)))
+                self.broker_client_pub.send(pack(NetworkActorMessage(peers=self.known_publishers)))
                 if self.introduction == "OK":
                     break
                 gevent.sleep(0.01)
 
-            print "in case of failure of the broker, watching..."
-            gevent.spawn(self.create_broker, watch=True)
 
-        gevent.spawn(self.__receiver__)
-
-        super(NetworkActor, self).__init__()
 
 
 
@@ -75,15 +89,9 @@ class NetworkActor(Actor):
 
                 self.broker_sub.bind(rx_addr)
                 self.broker_pub.bind(tx_addr)
-                if not watch:
-                    gevent.spawn(self.broker_receiver)
+
+                self.is_ab_server_node = True
                 print "this actor created a broker"
-
-                # tell the others about known peers
-                while self.introduction != "OK":
-                    self.broker_pub.send(pack(NetworkActorMessage(peers=self.peers)))
-                    gevent.sleep(0.01)
-
                 break  # quit trying to create a broker
             except Exception as e:
                 print e.message
@@ -93,12 +101,66 @@ class NetworkActor(Actor):
 
             gevent.sleep()
 
+    def receive(self, msg):
+        try:
+            m = pack(msg)
+        except:
+            pass
+
+        # actors -> local
+        self.network_send(m)
+
+        try:
+            # actors -> proxy
+            if self.broker_host != "localhost":
+                print "forwarding"
+                self.proxy_client_pub.send(m)
+        except:
+            pass
+
+
     def broker_receiver(self):
         print "broker receiver called!"
         while True:
             message = self.broker_sub.recv()
-            self.call_the_handler(message)
+            print "broker got message", message
+            try:
+                m = unpack(message)
+                if type(m) == type(NetworkActorMessage()):
+                    self.handle_NetworkActorMessage(m)
+                else:
+                    self.network_send(m)
+                    self.send(m)
+            except Exception as e:
+                print "exception in broker_receiver: ", e.message
 
+
+    def broker_client_receiver(self):
+        print "broker client receiver called!"
+        while True:
+            message = self.broker_client_sub.recv()
+            try:
+                m = unpack(message)
+                if type(m) == type(NetworkActorMessage()):
+                    if m.sender != self.actor_id:
+                        self.handle_NetworkActorMessage(m)
+            except Exception as e:
+                #print "exception in broker_client_receiver: ", e.message
+                print "ERR: in broker_client_receiver: ", message
+                import pdb
+                pdb.set_trace()
+
+
+    def proxy_client_receiver(self):
+        while True:
+            message = self.proxy_client_sub.recv()
+            print "proxy client got message: ", message
+            try:
+                m = unpack(message)
+                self.send(m)
+                self.network_send(m)
+            except Exception as e:
+                print "exception in proxy_client_receiver: ", e.message
 
     def handle_NetworkActorMessage(self, msg):
 
@@ -107,21 +169,22 @@ class NetworkActor(Actor):
         if self.port in msg.peers:
             self.introduction = "OK"
 
-        for port in msg.peers:
-            if port not in self.peers:
-                print "discovered another actor binded to port %d" % port
-                self.subscriber.connect("tcp://localhost:%d" % port)
-                self.peers.append(port)
+        for addr in msg.peers:
+            if addr not in self.known_publishers:
+                print "discovered another actor binded to addr: %s" % addr
+                self.subscriber.connect(addr)
+                self.known_publishers.append(addr)
                 print "subscriber is connected to the new actor"
 
                 print "msg.peers: ", msg.peers
 
-        if set(msg.peers) != set(self.peers):
+        if set(msg.peers) != set(self.known_publishers):
             print "informing others about known peers so far"
-            self.broker_pub.send(pack(NetworkActorMessage(peers=self.peers)))
+            self.broker_pub.send(pack(NetworkActorMessage(peers=self.known_publishers)))
 
     def network_receive(self, msg):
-        pass
+        self.send(msg)
+        self.broker_pub.send(pack(msg))
 
     def __receiver__(self):
         try:
@@ -161,7 +224,7 @@ class NetworkActor(Actor):
         except AttributeError:
             pass
 
-
+"""
 class ProxyActor(NetworkActor):
     def network_receive(self, msg):
         #print "proxy received network message: ", msg
@@ -171,3 +234,7 @@ class ProxyActor(NetworkActor):
         #print "proxy (id: %d) received msg: id: %d" % (id(self), msg.sender )
         self.network_send(msg)
 
+"""
+
+if __name__ == "__main__":
+    ProxyActor().join()
