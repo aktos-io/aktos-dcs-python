@@ -47,7 +47,7 @@ class ProxyActor(Actor):
         # peers known so far
         self.known_publishers = ["tcp://%s:%d" % ("localhost", self.port)]
         if self.broker_host != "localhost":
-            self.known_publishers.append("tcp://%s:%d" % (self.broker_host, self.port))
+            self.known_publishers.append("tcp://%s:%d" % (self.broker_host, self.tx_port))
 
 
         self.introduction = "NOK"  # not okay, introduce itself
@@ -115,8 +115,9 @@ class ProxyActor(Actor):
             if self.broker_host != "localhost":
                 print "forwarding"
                 self.proxy_client_pub.send(m)
-        except:
-            pass
+                self.broker_pub.send(m)
+        except Exception as e:
+            print "actors -> proxy error: ", e.message
 
 
     def broker_receiver(self):
@@ -126,11 +127,9 @@ class ProxyActor(Actor):
             print "broker got message", message
             try:
                 m = unpack(message)
-                if type(m) == type(NetworkActorMessage()):
-                    self.handle_NetworkActorMessage(m)
-                else:
-                    self.network_send(m)
-                    self.send(m)
+                self.network_send(m)
+                self.send(m)
+                self.call_the_handler(message)
             except Exception as e:
                 print "exception in broker_receiver: ", e.message
 

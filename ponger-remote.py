@@ -8,6 +8,7 @@ class Ponger(Actor):
     def receive(self, msg):
         print "ponger remote got message: ", msg
 
+
     def handle_PongMessage(self, msg):
         print "Ponger REMOTE got pong message: ", msg.text, msg.timestamp
         sleep(2)
