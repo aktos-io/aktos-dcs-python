@@ -68,15 +68,17 @@ class ProxyActor(Actor):
             self.proxy_client_pub.connect("tcp://%s:%d" % (self.broker_host, self.rx_port))
             self.proxy_client_sub.connect("tcp://%s:%d" % (self.broker_host, self.tx_port))
 
-        if not self.is_ab_server_node:
-            print "this actor introducing itself to the local broker"
-            for i in range(10):
-                print "trial ", i, "..."
-                self.broker_client_pub.send(pack(NetworkActorMessage(peers=self.known_publishers)))
-                if self.introduction == "OK":
-                    break
-                gevent.sleep(0.01)
+        self.refresh_known_publishers()
+        
 
+    def refresh_known_publishers(self):
+        print "sharing known publishers"
+        for i in range(10):
+            print "trial ", i, "..."
+            self.broker_client_pub.send(pack(NetworkActorMessage(peers=self.known_publishers)))
+            if self.introduction == "OK":
+                break
+            gevent.sleep(0.01)
 
 
 
@@ -91,6 +93,7 @@ class ProxyActor(Actor):
                 self.broker_pub.bind(tx_addr)
 
                 self.is_ab_server_node = True
+                self.refresh_known_publishers()
                 print "this actor created a broker"
                 break  # quit trying to create a broker
             except Exception as e:
@@ -121,7 +124,7 @@ class ProxyActor(Actor):
 
 
     def broker_receiver(self):
-        print "broker receiver called!"
+        print "broker receiver started!"
         while True:
             message = self.broker_sub.recv()
             #print "broker got message", message
@@ -135,7 +138,7 @@ class ProxyActor(Actor):
 
 
     def broker_client_receiver(self):
-        print "broker client receiver called!"
+        print "broker client receiver started!"
         while True:
             message = self.broker_client_sub.recv()
             try:
@@ -153,7 +156,7 @@ class ProxyActor(Actor):
     def proxy_client_receiver(self):
         while True:
             message = self.proxy_client_sub.recv()
-            print "proxy client got message: ", message
+            #print "proxy client got message: ", message
             try:
                 m = unpack(message)
                 self.send(m)
