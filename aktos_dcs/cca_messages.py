@@ -1,4 +1,9 @@
-import simplejson as json
+try:
+    import simplejson as json
+except ImportError:
+    print "WARNING: module simplejson not found, using json insead..."
+    import json
+
 import time
 import uuid
 
