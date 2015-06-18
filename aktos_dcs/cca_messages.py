@@ -1,4 +1,4 @@
-import json
+import simplejson as json
 import time
 import uuid
 
@@ -12,6 +12,12 @@ class MessageEncoder(json.JSONEncoder):
 def message_decoder(json_string):
     try:
         j = json.loads(json_string)
+        for i in range(10):
+            try:
+                j = json.loads(j)
+                print "DOUBLE PACKED MESSAGE, err#", i
+            except:
+                break
         c = globals()[j["class"]]
         del(j["class"])
         #print "j:", j
@@ -26,7 +32,10 @@ def unpack(json_string):
     return message_decoder(json_string)
 
 def pack(message_obj):
-    return json.dumps(message_obj, cls=MessageEncoder)
+    if isinstance(message_obj, Message):
+        return json.dumps(message_obj, cls=MessageEncoder)
+    else:
+        return message_obj
 
 class Message(object):
     sender = None

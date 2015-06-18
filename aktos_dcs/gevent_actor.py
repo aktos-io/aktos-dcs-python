@@ -10,11 +10,12 @@ import uuid
 
 class ActorBase(gevent.Greenlet):
 
-    def __init__(self):
+    def __init__(self, start_on_init=True):
         self.inbox = Queue()
         gevent.Greenlet.__init__(self)
         self.actor_id = uuid.uuid4()
-        self.start()
+        if start_on_init:
+            self.start()
 
     def receive(self, msg):
         """
