@@ -1,6 +1,6 @@
 #Distributed Control System Library for Python
 
-Gevent based actor model (inspired from Erlang) used for concurrency. API is heavily inspired from [pysage](https://github.com/realtime-system/pysage).  
+Gevent based actor model (inspired from Erlang) used for concurrency. Messaging layer is heavily inspired from [pysage](https://github.com/realtime-system/pysage).  
 
 aktos-dcs uses "addressing broker" to solve "dynamic service discovery" problem. The 'addressing broker' is created, watched for failures and recreated dynamically by alive actors. 
 
