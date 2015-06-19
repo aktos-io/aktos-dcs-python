@@ -33,6 +33,15 @@ $ python pinger2.py
 
 and so on... 
 
+### Actors distributed on the Local Area Network
+
+First, run above examples in a machine. On the other machine, 
+
+* open `pinger-remote.py` 
+* edit `broker_host` parameter of `ProxyActor()`
+* run `pinger-remote.py`
+* 
+* likewise, edit and run `ponger-remote.py`
 
 
 ### Platforms
