@@ -16,7 +16,7 @@ class Ponger(Actor):
 
 
 if __name__ == "__main__":
-    ProxyActor(broker_host="10.0.10.50")
+    ProxyActor(broker_host="192.168.2.87")
     ponger = Ponger()
     ponger.send(PingMessage(text="startup message from ponger REMOTE..."))
     ponger.join()
