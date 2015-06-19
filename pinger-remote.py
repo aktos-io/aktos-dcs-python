@@ -6,7 +6,8 @@ from aktos_dcs.Messages import *
 
 class Pinger(Actor):
     def receive(self, msg):
-        print "pinger remote got message: ", msg
+        #print "pinger remote got message: ", msg
+        pass
 
     def handle_PingMessage(self, msg):
         print "Pinger REMOTE got ping message: ", msg.text, msg.timestamp

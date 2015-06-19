@@ -116,10 +116,10 @@ class ProxyActor(Actor):
         try:
             # actors -> proxy
             if self.broker_host != "localhost":
-                print "forwarding via proxy_client: ", m
+                #print "forwarding via proxy_client: ", m
                 self.proxy_client_pub.send(m)
             else:
-                print "forwarding via broker_pub: ", m
+                #print "forwarding via broker_pub: ", m
                 self.broker_pub.send(m)
                 
         except Exception as e:
@@ -144,6 +144,7 @@ class ProxyActor(Actor):
         print "broker client receiver started!"
         while True:
             message = self.broker_client_sub.recv()
+            #print "broker_client_sub got message: ", message
             try:
                 m = unpack(message)
                 if type(m) == type(NetworkActorMessage()):

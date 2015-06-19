@@ -6,7 +6,8 @@ from aktos_dcs.Messages import *
 
 class Ponger(Actor):
     def receive(self, msg):
-        print "ponger remote got message: ", msg
+        #print "ponger remote got message: ", msg
+        pass
 
 
     def handle_PongMessage(self, msg):
@@ -16,7 +17,7 @@ class Ponger(Actor):
 
 
 if __name__ == "__main__":
-    ProxyActor(broker_host="192.168.2.87")
+    ProxyActor(broker_host="192.168.1.87")
     ponger = Ponger()
     ponger.send(PingMessage(text="startup message from ponger REMOTE..."))
     ponger.join()
