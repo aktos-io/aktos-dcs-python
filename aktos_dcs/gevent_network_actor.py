@@ -116,9 +116,12 @@ class ProxyActor(Actor):
         try:
             # actors -> proxy
             if self.broker_host != "localhost":
-                print "forwarding"
+                print "forwarding via proxy_client: ", m
                 self.proxy_client_pub.send(m)
+            else:
+                print "forwarding via broker_pub: ", m
                 self.broker_pub.send(m)
+                
         except Exception as e:
             print "actors -> proxy error: ", e.message
 
@@ -169,10 +172,10 @@ class ProxyActor(Actor):
 
         print "debug: NetworkActorMessage received:", msg.peers
 
-        if self.port in msg.peers:
-            self.introduction = "OK"
-
         for addr in msg.peers:
+            if str(self.port) in addr:
+                self.introduction = "OK"
+
             if addr not in self.known_publishers:
                 print "discovered another actor binded to addr: %s" % addr
                 self.subscriber.connect(addr)
