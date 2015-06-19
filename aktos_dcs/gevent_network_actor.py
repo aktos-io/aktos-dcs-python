@@ -160,7 +160,8 @@ class ProxyActor(Actor):
             try:
                 m = unpack(message)
                 self.send(m)
-                self.network_send(m)
+                if self.is_ab_server_node:
+                    self.network_send(m)
             except Exception as e:
                 print "exception in proxy_client_receiver: ", e.message
 
@@ -225,6 +226,22 @@ class ProxyActor(Actor):
                 getattr(self, handler_func)(m)
         except AttributeError:
             pass
+
+    def __exit__(self, type, value, traceback):
+        print "cleanup..."
+        self.subscriber.close()
+        self.publisher.close()
+
+        self.broker_sub.close()
+        self.broker_pub.close()
+
+        self.broker_client_sub.close()
+        self.broker_client_pub.close()
+
+        self.proxy_client_sub.close()
+        self.proxy_client_pub.close()
+        self.context.term()
+        
 
 """
 class ProxyActor(NetworkActor):
