@@ -40,7 +40,6 @@ First, run above examples in a machine. On the other machine,
 * open `pinger-remote.py` 
 * edit `broker_host` parameter of `ProxyActor()`
 * run `pinger-remote.py`
-* 
 * likewise, edit and run `ponger-remote.py`
 
 
@@ -48,8 +47,8 @@ First, run above examples in a machine. On the other machine,
 
 Should work on any platform, tested on:
 
-* Windows XP
-* Linux (Debian, Ubuntu)
+* Windows (XP)
+* Linux (Debian, Ubuntu, Raspbian)
 
 ### Install 
 
@@ -60,11 +59,18 @@ if windows: download and install http://aka.ms/vcpython27 first; then:
 ```
 # easy_install pyzmq gevent
 ```
-### Status
 
-Status is alpha (neither completed, nor heavily tested) for now. Contributions are welcome. 
+### License
+
+BSD License. 
+
+### Contact and Support
+
+A.K.T.O.S. Electronics, the Open Source Telemetry and Automation Systems company, Turkey
+info@aktos-elektronik.com
+https://aktos-elektronik.com
 
 ### TODO:
 
-* Make a TODO list 
 * Prepare documentation
+* Make a complete TODO list 
