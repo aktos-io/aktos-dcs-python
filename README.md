@@ -52,7 +52,7 @@ Should work on any platform, tested on:
 
 ### Install 
 
-This library depends on Gevent 1.0.2 and ZeroMQ 14.6.0 or later.
+This library depends on `gevent >= 1.0.2` and `pyzmq >= 14.4.0` with `libzmq >= 4.0.5`.
 
 if windows: download and install http://aka.ms/vcpython27 first; then: 
 
