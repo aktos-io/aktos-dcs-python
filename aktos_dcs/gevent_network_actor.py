@@ -45,7 +45,13 @@ class ProxyActor(Actor):
 
         for p in __publishers__:
             p.setsockopt(zmq.LINGER, 0)
-            p.setsockopt(zmq.SNDHWM, 2)
+            try:
+                opt = zmq.SNDHWM
+            except:
+                opt = zmq.HWM
+                
+            p.setsockopt(opt, 2)
+
             p.setsockopt(zmq.SNDTIMEO, 0)
 
 
