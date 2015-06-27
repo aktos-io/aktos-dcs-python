@@ -6,6 +6,10 @@ from cca_messages import *
 from gevent_actor import Actor
 import zmq.green as zmq
 
+
+if zmq.zmq_version_info()[0] < 4:
+    raise Exception("libzmq version should be >= 4.x")
+
 class ProxyActor(Actor):
 
     def __init__(self, broker_host="localhost", rx_port=5013, tx_port=5012):

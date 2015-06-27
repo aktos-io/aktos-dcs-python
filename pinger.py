@@ -15,4 +15,5 @@ if __name__ == "__main__":
     ProxyActor()
     pinger = Pinger()
     pinger.send(PongMessage(text="startup message from pinger..."))
+
     joinall([pinger])
