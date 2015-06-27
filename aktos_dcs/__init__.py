@@ -2,6 +2,7 @@ from cca_messages import Message
 from gevent_actor import Actor
 from gevent_network_actor import ProxyActor
 from gevent import sleep, joinall
+from cca_signal import CcaSignal
 
 if __name__ == "__main__":
     ProxyActor()
