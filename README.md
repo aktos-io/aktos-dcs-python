@@ -60,6 +60,15 @@ if windows: download and install http://aka.ms/vcpython27 first; then:
 # easy_install pyzmq gevent
 ```
 
+Debian Wheezy notes: 
+
+You may encounter problems while installing libzmq 4.x on wheezy. The most stable way we found out: 
+
+* `sudo apt-get remove libzmq*`
+* download and install libzmq from source: https://github.com/zeromq/libzmq
+* `sudo apt-get remove pyzmq`
+* `sudo pip install --upgrade pyzmq`
+
 ### License
 
 BSD License. 
