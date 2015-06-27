@@ -29,10 +29,25 @@ class ProxyActor(Actor):
         self.proxy_client_sub = self.context.socket(zmq.SUB)
         self.proxy_client_pub = self.context.socket(zmq.PUB)
 
-        self.subscriber.setsockopt(zmq.SUBSCRIBE, '')
-        self.broker_sub.setsockopt(zmq.SUBSCRIBE, '')
-        self.broker_client_sub.setsockopt(zmq.SUBSCRIBE, '')
-        self.proxy_client_sub.setsockopt(zmq.SUBSCRIBE, '')
+        __subscribers__ = [self.subscriber,
+                           self.broker_sub,
+                           self.broker_client_sub,
+                           self.proxy_client_sub]
+
+        __publishers__ = [self.publisher,
+                          self.broker_pub,
+                          self.broker_client_pub,
+                          self.proxy_client_pub]
+
+
+        for s in __subscribers__:
+            s.setsockopt(zmq.SUBSCRIBE, '')
+
+        for p in __publishers__:
+            p.setsockopt(zmq.LINGER, 0)
+            p.setsockopt(zmq.SNDHWM, 2)
+            p.setsockopt(zmq.SNDTIMEO, 0)
+
 
         gevent.spawn(self.broker_client_receiver)
         gevent.spawn(self.__receiver__)
