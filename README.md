@@ -47,18 +47,30 @@ First, run above examples in a machine. On the other machine,
 
 Should work on any platform, tested on:
 
-* Windows (XP)
+* Windows (XP, 8.1)
 * Linux (Debian, Ubuntu, Raspbian)
 
 ### Install 
 
 This library depends on `gevent >= 1.0.2` and `pyzmq >= 14.4.0` with `libzmq >= 4.0.5`.
 
-if windows: download and install http://aka.ms/vcpython27 first; then: 
 
-```
-# easy_install pyzmq gevent
-```
+#### Windows: 
+
+* download and install http://aka.ms/vcpython27
+* `easy_install pyzmq gevent`
+
+Windows 8.1 notes:
+
+You may encounter problems while installing gevent via `easy_install` on win8.1. Working solution is:
+
+* download and install http://aka.ms/vcpython27
+* `easy_install greenlet pyzmq`
+* download and install `gevent` from: https://code.google.com/p/gevent/downloads/list?can=1&q=
+
+#### Linux:
+
+* `sudo easy_install pyzmq gevent`
 
 Debian Wheezy notes: 
 
