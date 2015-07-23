@@ -4,9 +4,11 @@
 import gevent
 from gevent.queue import Queue
 
+import atexit
+import traceback
+
 from cca_messages import *
 import uuid
-
 
 class ActorBase(gevent.Greenlet):
 
@@ -17,6 +19,8 @@ class ActorBase(gevent.Greenlet):
         if start_on_init:
             self.start()
 
+        atexit.register(self.cleanup)
+
     def receive(self, msg):
         """
         Define in your subclass.
@@ -25,6 +29,10 @@ class ActorBase(gevent.Greenlet):
         pass
 
     def action(self):
+        pass
+
+    def cleanup(self):
+        #print "this is an actor, running cleanup...", self
         pass
 
     def _run(self):
@@ -43,6 +51,7 @@ class ActorBase(gevent.Greenlet):
                 handler_func = getattr(self, handler_func_name, None)
                 if callable(handler_func):
                     handler_func(message)
+
 
         a = gevent.spawn(get_message)
         b = gevent.spawn(self.action)
@@ -119,6 +128,9 @@ if __name__ == "__main__":
 
         def handle_IoMessage(self, msg):
             print "handle_IoMessage:", msg
+
+        def cleanup(self):
+            print "exiting and cleanup ...", self
 
     class TestActor2(Actor):
         def receive(self, msg):
