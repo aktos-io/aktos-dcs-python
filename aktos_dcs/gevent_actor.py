@@ -13,7 +13,7 @@ class ActorBase(gevent.Greenlet):
     def __init__(self, start_on_init=True):
         self.inbox = Queue()
         gevent.Greenlet.__init__(self)
-        self.actor_id = uuid.uuid4()
+        self.actor_id = str(uuid.uuid4())
         if start_on_init:
             self.start()
 
@@ -36,14 +36,13 @@ class ActorBase(gevent.Greenlet):
 
                 gevent.spawn(self.receive, message)
                 #print("message handler spawned!!")
-                try:
-                    if isinstance(message, Message):
-                        handler_func = "handle_" + message.__class__.__name__
-                        getattr(self, handler_func)(message)
-                except AttributeError:
-                    pass
-                except:
-                    raise
+
+                # pass the XYZMessage to "handle_XYZMessage()" function
+                # if exists:
+                handler_func_name = "handle_" + message.__class__.__name__
+                handler_func = getattr(self, handler_func_name, None)
+                if callable(handler_func):
+                    handler_func(message)
 
         a = gevent.spawn(get_message)
         b = gevent.spawn(self.action)
@@ -62,15 +61,12 @@ class Actor(ActorBase):
         """
         send message to the actor manager
         """
-        try:
-            msg = unpack(msg)
-        except:
-            pass
-        if isinstance(msg, Message):
-            msg.sender = self.actor_id
-            if msg.send_to_itself:
-                msg.send_to_itself = None
-                self.inbox.put(msg)
+        assert(isinstance(msg, Message))
+
+        msg.sender = self.actor_id
+        if msg.send_to_itself:
+            msg.send_to_itself = None
+            self.inbox.put(msg)
         self.mgr.inbox.put(msg)
 
 class Singleton(type):
@@ -102,10 +98,8 @@ class ActorManager(ActorBase):
         self.actors = []
 
     def receive(self, msg):
-        try:
-            msg = unpack(msg)
-        except:
-            pass
+        assert(isinstance(msg, Message))
+
         for actor_obj in self.actors:
             if msg.sender != actor_obj.actor_id:
                 actor_obj.inbox.put(msg)
@@ -118,13 +112,13 @@ class ActorManager(ActorBase):
 if __name__ == "__main__":
     class TestActor(Actor):
         def receive(self, message):
-            print "this is test actor: ", message, id(self)
+            print "TestActor.receive: ", message, id(self)
 
         def handle_TestMessage(self, msg):
-            print "test message: ", msg
+            print "handle_TestMessage: ", msg
 
         def handle_IoMessage(self, msg):
-            print "io message: ", msg
+            print "handle_IoMessage:", msg
 
     class TestActor2(Actor):
         def receive(self, msg):
@@ -139,8 +133,8 @@ if __name__ == "__main__":
 
     test.inbox.put(TestMessage(deneme="bir kii"))
     test.inbox.put(IoMessage(aaa="io message"))
-    test.inbox.put("bu nesne Message class'ından türetilmedi")
+    #test.inbox.put("bu nesne Message class'ından türetilmedi")
 
-    test.send("naber")
+    #test.send("naber")
 
-    gevent.sleep(100)
+    gevent.sleep(99999)

@@ -131,6 +131,10 @@ class PingMessage(Message):
 
 class PongMessage(PingMessage):
     pass
+    
+class aMessage(Message):
+	direction = ""  # up, down, none
+	
 
 if __name__ == "__main__":
     a = KeypadMessage(key="d", edge="rising_edge")
