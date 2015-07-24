@@ -13,5 +13,5 @@ class Ponger(Actor):
 if __name__ == "__main__":
     ProxyActor(my_ip="192.168.2.115")
     ponger = Ponger()
-    ponger.send(PingMessage(text="startup message from ponger..."))
+    ponger.send(PingMessage(text="startup message from ponger cca..."))
     ponger.join()

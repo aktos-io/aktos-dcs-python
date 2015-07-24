@@ -15,13 +15,13 @@ import pdb
 
 class ProxyActor(Actor):
 
-    def __init__(self, my_ip="", broker_conn="192.168.2.55:8012:8013, localhost:9012:9013", rx_port=5012, tx_port=5013):
+    def __init__(self, my_ip="", brokers="192.168.2.55:8012:8013 localhost:9012:9013", rx_port=5012, tx_port=5013):
         #super(ProxyActor, self).__init__()
         Actor.__init__(self)
         print "proxy actor created with id: ", self.actor_id
 
 
-        self.broker_conn = broker_conn
+        self.brokers = brokers
         self.my_ip = my_ip
 
         self.rx_port = rx_port
@@ -114,15 +114,23 @@ class ProxyActor(Actor):
         # connect their server_pub port with your client_sub port
 
         print "sync contacts..."
-        print "this contact: ", self.this_contact
 
         if not self.this_is_the_broker:
             self.client_pub.connect("tcp://%s:%d" % ("localhost", self.rx_port))
             self.client_sub.connect("tcp://%s:%d" % ("localhost", self.tx_port))
 
-            gevent.sleep(1)
-            print "sending introduction msg..."
-            self.propogate_msg_to_others(self.introduction_msg)
+        broker_list = self.brokers.split()
+        for broker in broker_list:
+            ip, rx_port, tx_port = broker.split(":")
+            print "additional broker: ", ip, rx_port, tx_port
+            self.client_pub.connect("tcp://%s:%s" % (ip, rx_port))
+            self.client_sub.connect("tcp://%s:%s" % (ip, tx_port))
+
+        gevent.sleep(2)
+        print "sending introduction msg..."
+        self.propogate_msg_to_others(self.introduction_msg)
+
+
 
 
     def create_broker(self, watch=False):
@@ -167,6 +175,11 @@ class ProxyActor(Actor):
             print "found new entry, adding current contact list..."
             for k, v in msg.new_entry.iteritems():
                 for process in v:
+                    try:
+                        assert(self.contact_list[k])
+                    except:
+                        self.contact_list[k] = list()
+
                     self.contact_list[k].append(process)
 
             #pdb.set_trace()

@@ -12,8 +12,8 @@ class Pinger(Actor):
 
 
 if __name__ == "__main__":
-    ProxyActor(my_ip="192.168.2.115")
+    ProxyActor(my_ip="192.168.2.115", brokers="192.168.2.116:5012:5013")
     pinger = Pinger()
-    pinger.send(PongMessage(text="startup message from pinger..."))
+    pinger.send(PongMessage(text="startup message from pinger cca..."))
 
     joinall([pinger])
