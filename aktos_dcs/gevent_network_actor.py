@@ -20,10 +20,8 @@ class ProxyActor(Actor):
         Actor.__init__(self)
         print "proxy actor created with id: ", self.actor_id
 
-
         self.brokers = brokers
         self.my_ip = my_ip
-
         self.rx_port = rx_port
         self.tx_port = tx_port
 
@@ -41,14 +39,12 @@ class ProxyActor(Actor):
         self.client_sub = self.context.socket(zmq.SUB)
         self.client_pub = self.context.socket(zmq.PUB)
 
-
         # broker_link:
         #   this is address broker. others connect to
         #   this link and exchange known publisher's
         #   address+port information (phone book)
         self.broker_sub = self.context.socket(zmq.SUB)
         self.broker_pub = self.context.socket(zmq.PUB)
-
 
         self.__subscribers__ = [self.server_sub,
                            self.client_sub,
@@ -57,7 +53,6 @@ class ProxyActor(Actor):
         self.__publishers__ = [self.server_pub,
                            self.client_pub,
                            self.broker_pub]
-
 
         for s in self.__subscribers__:
             s.setsockopt(zmq.SUBSCRIBE, '')
@@ -72,30 +67,17 @@ class ProxyActor(Actor):
         __receivers__ = [self.server_sub_receiver,
                          self.client_sub_receiver,
                          self.broker_sub_receiver]
-
         for r in __receivers__:
             gevent.spawn(r)
-
 
         # server_pub will serve on a random port
         self.server_pub_port = self.server_pub.bind_to_random_port(addr="tcp://*")
         self.server_sub_port = self.server_sub.bind_to_random_port(addr="tcp://*")
         print "this actor's server ports are: ", self.server_sub_port, self.server_pub_port
 
-
-        """
-        example contact list:
-
-            {'192.168.2.115': ['s: 56579, 60038; p: 64596, 57333',
-                               's: 50004, 64055; p: 57311, 64435',
-                               's: 53626, 65168; p: 58617, 51819',
-                               's: 62387, 59989; p: 61586, 53248']}
-        """
         self.this_contact = dict()
         self.this_contact[self.my_ip] = [[self.server_sub_port, self.server_pub_port]]
-
         self.introduction_msg = ProxyActorMessage(new_entry=self.this_contact)
-
         self.contact_list = dict(self.this_contact)
 
         # create or try to create address broker
@@ -106,8 +88,6 @@ class ProxyActor(Actor):
             gevent.spawn(self.create_broker, watch=True)
 
         self.sync_contacts()
-
-
 
     def sync_contacts(self):
         # go and get other processes' address information
@@ -130,9 +110,6 @@ class ProxyActor(Actor):
         print "sending introduction msg..."
         self.propogate_msg_to_others(self.introduction_msg)
 
-
-
-
     def create_broker(self, watch=False):
         while True:
             try:
@@ -152,17 +129,10 @@ class ProxyActor(Actor):
 
             gevent.sleep()
 
-
     def propogate_msg_to_others(self, msg):
-        msg.sender.append(self.actor_id)
-
-        json_msg = pack(msg)
-        self.client_pub.send(json_msg)
-        if self.this_is_the_broker:
-            self.broker_pub.send(json_msg)
-        else:
-            self.server_pub.send(json_msg)
-
+        self.server_send(msg)
+        self.broker_send(msg)
+        self.client_send(msg)
 
     def receive(self, msg):
         #print "receive propogating message to others...", msg
@@ -245,13 +215,26 @@ class ProxyActor(Actor):
             # forward this message to others
             msg = unpack(message)
             if type(msg) != type(ProxyActorMessage()):
-                msg.sender.append(self.actor_id)
-                message = pack(msg)
-                self.server_pub.send(message)
-                self.client_pub.send(message)
+                self.server_send(msg)
+                self.client_send(msg)
 
             gevent.sleep()
 
+    def server_send(self, msg):
+        msg.sender.append(self.actor_id + "server_send")
+        message = pack(msg)
+        self.server_pub.send(message)
+
+    def client_send(self, msg):
+        msg.sender.append(self.actor_id + "client_send")
+        message = pack(msg)
+        self.client_pub.send(message)
+
+    def broker_send(self, msg):
+        if self.this_is_the_broker:
+            msg.sender.append(self.actor_id + "broker_send")
+            message = pack(msg)
+            self.broker_pub.send(message)
 
     def send_to_inner_actors(self, message):
         msg = unpack(message)
@@ -265,8 +248,7 @@ class ProxyActor(Actor):
 
     def forward_messages_via_broker(self, message):
         msg = unpack(message)
-        msg.sender.append(self.actor_id)
-        self.broker_pub.send(pack(msg))
+        self.broker_send(msg)
 
     def cleanup(self):
         print "cleanup..."
