@@ -149,13 +149,15 @@ class ProxyActor(Actor):
         msg.sender.append(self.actor_id)
 
         json_msg = pack(msg)
-        self.server_pub.send(json_msg)
         self.client_pub.send(json_msg)
         if self.this_is_the_broker:
             self.broker_pub.send(json_msg)
+        else:
+            self.server_pub.send(json_msg)
+
 
     def receive(self, msg):
-        print "receive propogating message to others...", pack(msg)
+        #print "receive propogating message to others...", msg
         msg.sender.append(self.actor_id)
         self.propogate_msg_to_others(msg)
 

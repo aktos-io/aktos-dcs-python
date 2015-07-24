@@ -13,9 +13,6 @@ import decimal
 class MessageEncoder(json.JSONEncoder):
     def default(self, o):
         m = o.__dict__
-        #m["class"] = o.__class__.__name__
-        import pdb
-        pdb.set_trace()
         return m
 
 
@@ -39,7 +36,6 @@ def pack(msg):
     assert(isinstance(msg, Message))
     msg.cls = msg.__class__.__name__
     return json.dumps(msg, cls=MessageEncoder)
-    #return json.dumps(dict(msg))
 
 class Message(dict):
     timestamp = 0  # message creation unix time
