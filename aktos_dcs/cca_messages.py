@@ -43,10 +43,11 @@ def pack(message_obj):
         return message_obj
 
 class Message(object):
-    sender = None
-    timestamp = 0
+    sender = ""  # unique id of message sender
+    timestamp = 0  # message creation unix time
     send_to_itself = False
-    uuid = None
+    msg_id = ""  # unique id of message
+    proxied_by = []  # proxy actor's unique id that forwarded this message
 
 
     def __init__(self, **kwargs):
@@ -59,13 +60,13 @@ class Message(object):
         if not self.timestamp:
             self.timestamp = time.time()
 
-        if not self.uuid:
-            self.uuid = uuid.uuid4()
+        if not self.msg_id:
+            self.msg_id = str(uuid.uuid4())
 
-class NetworkActorMessage(Message):
-    joiner_port = 0
-    peers = []
-    broadcasting = False
+class ProxyActorMessage(Message):
+    contact_list = dict()
+    new_entry = dict()
+    reply_to = ""
 
 # TODO: Classes defined below are belong to application. Move them!
 

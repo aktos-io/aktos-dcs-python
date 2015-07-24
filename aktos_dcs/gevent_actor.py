@@ -109,9 +109,10 @@ class ActorManager(ActorBase):
     def receive(self, msg):
         assert(isinstance(msg, Message))
 
-        for actor_obj in self.actors:
-            if msg.sender != actor_obj.actor_id:
-                actor_obj.inbox.put(msg)
+        for actor in self.actors:
+            if actor.actor_id != msg.sender:
+                if actor.actor_id not in msg.proxied_by:
+                    actor.inbox.put(msg)
 
     def register(self, actor_instance):
         self.actors.append(actor_instance)
