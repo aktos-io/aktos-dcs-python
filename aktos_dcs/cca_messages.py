@@ -6,8 +6,6 @@ except ImportError:
 
 import time
 import uuid
-import datetime
-import decimal
 
 # message functions
 class MessageEncoder(json.JSONEncoder):
