@@ -212,6 +212,8 @@ class ProxyActor(Actor):
 
     def server_sub_receiver(self):
         while True:
+            if self.this_is_the_broker:
+                break
             message = self.server_sub.recv()
             self.send_to_inner_actors(message)
             self.forward_messages_via_broker(message)
@@ -219,6 +221,8 @@ class ProxyActor(Actor):
 
     def client_sub_receiver(self):
         while True:
+            if self.this_is_the_broker:
+                break
             message = self.client_sub.recv()
             self.send_to_inner_actors(message)
             self.forward_messages_via_broker(message)
