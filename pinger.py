@@ -12,7 +12,7 @@ class Pinger(Actor):
 
 
 if __name__ == "__main__":
-    ProxyActor()
+    ProxyActor(my_ip="192.168.2.115")
     pinger = Pinger()
     pinger.send(PongMessage(text="startup message from pinger..."))
 

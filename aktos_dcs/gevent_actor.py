@@ -10,6 +10,8 @@ import traceback
 from cca_messages import *
 import uuid
 
+import pdb
+
 class ActorBase(gevent.Greenlet):
 
     def __init__(self, start_on_init=True):
@@ -72,10 +74,11 @@ class Actor(ActorBase):
         """
         assert(isinstance(msg, Message))
 
-        msg.sender = self.actor_id
+        msg.sender.append(self.actor_id)
         if msg.send_to_itself:
             msg.send_to_itself = None
             self.inbox.put(msg)
+
         self.mgr.inbox.put(msg)
 
 class Singleton(type):
@@ -110,9 +113,8 @@ class ActorManager(ActorBase):
         assert(isinstance(msg, Message))
 
         for actor in self.actors:
-            if actor.actor_id != msg.sender:
-                if actor.actor_id not in msg.proxied_by:
-                    actor.inbox.put(msg)
+            if actor.actor_id not in msg.sender:
+                actor.inbox.put(msg)
 
     def register(self, actor_instance):
         self.actors.append(actor_instance)

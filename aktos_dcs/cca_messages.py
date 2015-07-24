@@ -6,25 +6,24 @@ except ImportError:
 
 import time
 import uuid
+import datetime
+import decimal
 
 # message functions
 class MessageEncoder(json.JSONEncoder):
     def default(self, o):
         m = o.__dict__
-        m["class"] = o.__class__.__name__
+        #m["class"] = o.__class__.__name__
+        import pdb
+        pdb.set_trace()
         return m
+
 
 def message_decoder(json_string):
     try:
         j = json.loads(json_string)
-        for i in range(10):
-            try:
-                j = json.loads(j)
-                print "DOUBLE PACKED MESSAGE, err#", i
-            except:
-                break
-        c = globals()[j["class"]]
-        del(j["class"])
+        c = globals()[j["cls"]]
+        del(j["cls"])
         #print "j:", j
         o = c(**j)
     except Exception as e:
@@ -36,29 +35,30 @@ def message_decoder(json_string):
 def unpack(json_string):
     return message_decoder(json_string)
 
-def pack(message_obj):
-    if isinstance(message_obj, Message):
-        return json.dumps(message_obj, cls=MessageEncoder)
-    else:
-        return message_obj
+def pack(msg):
+    assert(isinstance(msg, Message))
+    msg.cls = msg.__class__.__name__
+    return json.dumps(msg, cls=MessageEncoder)
+    #return json.dumps(dict(msg))
 
-class Message(object):
-    sender = ""  # unique id of message sender
+class Message(dict):
     timestamp = 0  # message creation unix time
     send_to_itself = False
     msg_id = ""  # unique id of message
-    proxied_by = []  # proxy actor's unique id that forwarded this message
 
-
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
+        dict.__init__(self, *args, **kwargs)
+        self.__dict__ = self
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-        if not self.sender:
-            self.sender = None
-
         if not self.timestamp:
             self.timestamp = time.time()
+
+        try:
+            assert(self.sender)
+        except:
+            self.sender = list()  # unique ids of message sender and the forwarders
 
         if not self.msg_id:
             self.msg_id = str(uuid.uuid4())

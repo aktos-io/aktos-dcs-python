@@ -11,7 +11,7 @@ class Ponger(Actor):
         self.send(PingMessage(text="Hello pinger, this is ponger 1!"))
 
 if __name__ == "__main__":
-    ProxyActor()
+    ProxyActor(my_ip="192.168.2.115")
     ponger = Ponger()
     ponger.send(PingMessage(text="startup message from ponger..."))
     ponger.join()
