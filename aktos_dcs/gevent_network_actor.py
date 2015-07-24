@@ -15,7 +15,12 @@ import pdb
 
 class ProxyActor(Actor):
 
-    def __init__(self, my_ip="", brokers="192.168.2.55:8012:8013 localhost:9012:9013", rx_port=5012, tx_port=5013):
+    def __init__(self, my_ip="", brokers="", rx_port=5012, tx_port=5013):
+        """
+        brokers: additional brokers other than localhost.
+            format: "ip:rx_port:tx_port other_ip:its_rx_port:its_tx_port"
+            example: brokers="192.168.2.55:8012:8013 localhost:9012:9013 82.64.123.233:4567:8907"
+        """
         #super(ProxyActor, self).__init__()
         Actor.__init__(self)
         print "proxy actor created with id: ", self.actor_id
@@ -93,22 +98,27 @@ class ProxyActor(Actor):
         # go and get other processes' address information
         # connect their server_pub port with your client_sub port
 
-        print "sync contacts..."
-
+        do_sync = False
         if not self.this_is_the_broker:
+            do_sync = True
             self.client_pub.connect("tcp://%s:%d" % ("localhost", self.rx_port))
             self.client_sub.connect("tcp://%s:%d" % ("localhost", self.tx_port))
 
         broker_list = self.brokers.split()
-        for broker in broker_list:
-            ip, rx_port, tx_port = broker.split(":")
-            print "additional broker: ", ip, rx_port, tx_port
-            self.client_pub.connect("tcp://%s:%s" % (ip, rx_port))
-            self.client_sub.connect("tcp://%s:%s" % (ip, tx_port))
+        if broker_list:
+            do_sync = True
+            for broker in broker_list:
+                ip, rx_port, tx_port = broker.split(":")
+                print "  * additional broker: ", ip, rx_port, tx_port
+                self.client_pub.connect("tcp://%s:%s" % (ip, rx_port))
+                self.client_sub.connect("tcp://%s:%s" % (ip, tx_port))
 
-        gevent.sleep(2)
-        print "sending introduction msg..."
-        self.propogate_msg_to_others(self.introduction_msg)
+        if do_sync:
+            print "sync contacts..."
+            gevent.sleep(2)  # TODO: remove this sleep
+            self.propogate_msg_to_others(self.introduction_msg)
+        else:
+            print "there are no processes to sync contacts..."
 
     def create_broker(self, watch=False):
         while True:
@@ -125,7 +135,7 @@ class ProxyActor(Actor):
             except Exception as e:
                 if not watch:
                     raise
-                gevent.sleep(1)  # TODO: decrease this time
+                gevent.sleep(1)  # TODO: make this time configurable
 
             gevent.sleep()
 
@@ -136,7 +146,6 @@ class ProxyActor(Actor):
 
     def receive(self, msg):
         #print "receive propogating message to others...", msg
-        msg.sender.append(self.actor_id)
         self.propogate_msg_to_others(msg)
 
     def handle_ProxyActorMessage(self, msg):
@@ -221,18 +230,21 @@ class ProxyActor(Actor):
             gevent.sleep()
 
     def server_send(self, msg):
-        msg.sender.append(self.actor_id + "server_send")
+        msg = unpack(pack(msg))
+        msg.sender.append(self.actor_id)
         message = pack(msg)
         self.server_pub.send(message)
 
     def client_send(self, msg):
-        msg.sender.append(self.actor_id + "client_send")
+        msg = unpack(pack(msg))
+        msg.sender.append(self.actor_id)
         message = pack(msg)
         self.client_pub.send(message)
 
     def broker_send(self, msg):
         if self.this_is_the_broker:
-            msg.sender.append(self.actor_id + "broker_send")
+            msg = unpack(pack(msg))
+            msg.sender.append(self.actor_id)
             message = pack(msg)
             self.broker_pub.send(message)
 
@@ -244,6 +256,7 @@ class ProxyActor(Actor):
         else:
             # do not modify msg.sender information
             msg.sender.append(self.actor_id)
+            msg = unpack(pack(msg))
             self.mgr.inbox.put(msg)
 
     def forward_messages_via_broker(self, message):

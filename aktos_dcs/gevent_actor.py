@@ -12,6 +12,7 @@ import uuid
 
 import pdb
 
+
 class ActorBase(gevent.Greenlet):
 
     def __init__(self, start_on_init=True):
@@ -27,14 +28,18 @@ class ActorBase(gevent.Greenlet):
         """
         Define in your subclass.
         """
-        #raise NotImplemented()
         pass
 
     def action(self):
+        """
+        Define in your subclass.
+        """
         pass
 
     def cleanup(self):
-        #print "this is an actor, running cleanup...", self
+        """
+        Define in your subclass.
+        """
         pass
 
     def _run(self):
@@ -47,8 +52,8 @@ class ActorBase(gevent.Greenlet):
                 gevent.spawn(self.receive, message)
                 #print("message handler spawned!!")
 
-                # pass the XYZMessage to "handle_XYZMessage()" function
-                # if exists:
+                # pass the XYZMessage to "handle_XYZMessage()"
+                # function if such a function exists:
                 handler_func_name = "handle_" + message.__class__.__name__
                 handler_func = getattr(self, handler_func_name, None)
                 if callable(handler_func):
@@ -75,6 +80,7 @@ class Actor(ActorBase):
         assert(isinstance(msg, Message))
 
         msg.sender.append(self.actor_id)
+
         if msg.send_to_itself:
             msg.send_to_itself = None
             self.inbox.put(msg)
