@@ -8,11 +8,12 @@ import time
 import uuid
 
 # message functions
+"""
 class MessageEncoder(json.JSONEncoder):
     def default(self, o):
         m = o.__dict__
         return m
-
+"""
 
 def message_decoder(json_string):
     try:
@@ -33,35 +34,51 @@ def unpack(json_string):
 def pack(msg):
     assert(isinstance(msg, Message))
     msg.cls = msg.__class__.__name__
-    return json.dumps(msg, cls=MessageEncoder)
+    #return json.dumps(msg, cls=MessageEncoder)
+    return json.dumps(dict(msg))
 
 class Message(dict):
-    timestamp = 0  # message creation unix time
-    send_to_itself = False
+    """
     msg_id = ""  # unique id of message
-    debug = []  # debug string
-
+    timestamp = time.time()
+    msg_id = str(uuid.uuid4())
+    sender = []
+    debug = []
+    """
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
         self.__dict__ = self
+
+        """
+        try:
+            for attr in dir(self):
+                if not callable(getattr(self, attr)) and not attr.startswith("__"):
+                    #print attr
+                    default_val = getattr(self, attr)
+                    delattr(Message, attr)
+                    setattr(self, attr, default_val)
+        except:
+            import pdb
+            pdb.set_trace()
+
+        """
+        self.msg_id = ""  # unique id of message
+        self.timestamp = time.time()
+        self.msg_id = str(uuid.uuid4())
+        self.sender = []
+        self.debug = []
+
+        # this should be the last one
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-        if not self.timestamp:
-            self.timestamp = time.time()
-
-        try:
-            assert self.sender
-        except:
-            self.sender = list()  # unique ids of message sender and the forwarders
-
-        if not self.msg_id:
-            self.msg_id = str(uuid.uuid4())
 
 class ProxyActorMessage(Message):
     contact_list = dict()
-    new_entry = dict()
+    new_contact_list = dict()
     reply_to = ""
+
+
 
 # TODO: Classes defined below are belong to application. Move them!
 
@@ -129,46 +146,16 @@ class PongMessage(PingMessage):
     pass
     
 class aMessage(Message):
-	direction = ""  # up, down, none
-	
+    direction = ""  # up, down, none
+
 
 if __name__ == "__main__":
     a = KeypadMessage(key="d", edge="rising_edge")
 
-    print a.pack()
-
-    a = IoMessage(pin_name="d", pin_number="3", edge="rising_edge")
-
-    class aaaa():
-        pin_name = "aa"
-        pin_number = 77
+    print pack(a)
+    print a
+    b = unpack(a)
+    print b
 
 
-    a = IoMessage(sender=aaaa(), edge="rising_edge")
-
-    print a.pack()
-    print a.pin_name
-    aa = message_decoder(a.pack())
-    print(aa)
-
-    print aa.edge
-    print aa.timestamp
-    print aa.sender
-
-    b = AlarmMessage()
-    print b.pack()
-    print b.reason
-
-    k = UserInputMessage(screen_str="5923847 yluimeka", msg_id=5)
-    print k.get_msg_group()
-
-    l = AlarmGenJumpToState(state=34)
-    print l.state
-
-    print("-"*40)
-
-    print(IoMessage().pack())
-
-    m = IoMessage()
-    print m.curr_val
 

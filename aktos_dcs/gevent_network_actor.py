@@ -15,6 +15,7 @@ if zmq.zmq_version_info()[0] < 4:
 
 import pdb
 
+
 def get_local_ip_addresses():
     import netifaces
 
@@ -30,6 +31,7 @@ def get_local_ip_addresses():
                 if addr != '127.0.0.1':
                     ip_addresses.append(addr)
     return ip_addresses
+
 
 class DcsContactList():
     #__metaclass__ = Singleton
@@ -112,6 +114,7 @@ class Link(dict):
         self.broker = LinkMethods()
         self.broker_client = LinkMethods()
 
+
 class LinkMethods(dict):
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
@@ -142,25 +145,23 @@ class ProxyActor(Actor):
         self.context = zmq.Context()
         self.msg_history = []  # list of [msg_id, timestamp]
         self.connection_list = []
-
         self.link = Link()
-
-        # spawn the receivers
         self.link.broker.receiver = self.broker_sub_receiver
         self.link.server.receiver = self.server_sub_receiver
         self.link.client.receiver = self.client_sub_receiver
         self.link.broker_client.receiver = self.broker_client_sub_receiver
 
-        for l in self.link:
-            self.link[l].sub = self.context.socket(zmq.SUB)
-            self.link[l].sub.setsockopt(zmq.SUBSCRIBE, '')
+        # create sub, pub and spawn the receivers
+        for l in dict(self.link).values():
+            l.sub = self.context.socket(zmq.SUB)
+            l.sub.setsockopt(zmq.SUBSCRIBE, '')
 
-            self.link[l].pub = self.context.socket(zmq.PUB)
-            self.link[l].pub.setsockopt(zmq.LINGER, 0)
-            self.link[l].pub.setsockopt(zmq.SNDHWM, 2)
-            self.link[l].pub.setsockopt(zmq.SNDTIMEO, 0)
+            l.pub = self.context.socket(zmq.PUB)
+            l.pub.setsockopt(zmq.LINGER, 0)
+            l.pub.setsockopt(zmq.SNDHWM, 2)
+            l.pub.setsockopt(zmq.SNDTIMEO, 0)
 
-            gevent.spawn(self.link[l].receiver)
+            gevent.spawn(l.receiver)
 
         # create or watch to create address broker
         self.this_is_the_broker = False
@@ -182,24 +183,25 @@ class ProxyActor(Actor):
 
         self.sync_contacts()
 
-    def connect_to_contacts(self, link_methods=LinkMethods(), contact_list=[]):
+    def connect_to_contacts(self, link_name, contact_list=[]):
         rx, tx = sub, pub = 0, 1
         #print "will connect to contact list: ", contact_list
         for contact in contact_list:
             if contact not in self.this_contact.contact_list:
                 for ip in contact['ip-list']:
                     conn_str = "%s:%d:%d" % (ip, contact['ports'][rx], contact['ports'][tx])
-                    print "connecting to ", conn_str
+                    print "connecting to %s\t%d\t%d via " % \
+                          (ip, contact['ports'][rx], contact['ports'][tx]), \
+                        link_name
                     rx_addr = "tcp://%s:%d" % (ip, contact['ports'][rx])
                     tx_addr = "tcp://%s:%d" % (ip, contact['ports'][tx])
-                    link_methods.pub.connect(rx_addr)
-                    link_methods.sub.connect(tx_addr)
+                    self.link[link_name].pub.connect(rx_addr)
+                    self.link[link_name].sub.connect(tx_addr)
                     self.connection_list.append(conn_str)
                     #print "full connection list: ", self.connection_list
             else:
                 #print "not connecting to itself: ", contact
                 pass
-
 
     def sync_contacts(self):
         # go and get other processes' address information
@@ -209,14 +211,33 @@ class ProxyActor(Actor):
 
         if not self.this_is_the_broker:
             local_broker_contact = DcsContactList("localhost:%d:%d" % (self.rx_port, self.tx_port))
-            self.connect_to_contacts(self.link.broker_client, local_broker_contact.contact_list)
+            self.connect_to_contacts('broker_client', local_broker_contact.contact_list)
 
-        self.connect_to_contacts(self.link.broker_client, self.contacts.contact_list)
+        self.connect_to_contacts('broker_client', self.contacts.contact_list)
 
         gevent.sleep(2)  # TODO: remove this sleep
 
-        self.introduction_msg = ProxyActorMessage(new_entry=self.contacts.contact_list)
+        self.introduction_msg = ProxyActorMessage(new_contact_list=self.contacts.contact_list)
         self.broker_client_send(self.introduction_msg)
+
+    def handle_ProxyActorMessage(self, msg):
+        if msg.new_contact_list:
+            print "got new contact list, merging and redistributing..."
+            pprint(msg)
+            self.contacts.add_from_contact_list(msg.new_contact_list)
+            #pdb.set_trace()
+            self.broker_all_send(ProxyActorMessage(
+                contact_list=self.contacts.contact_list,
+                reply_to=msg.msg_id))
+        elif msg.contact_list:
+            print "got full contact list, updating own list and connecting currently alive processes... "
+            self.contacts.add_from_contact_list(msg.contact_list)
+            if msg.reply_to == self.introduction_msg.msg_id:
+                self.connect_to_contacts('client', contact_list=msg.contact_list)
+        else:
+            print "WARNING: UNHANDLED CONTROL MESSAGE: ", msg
+
+        #pprint(self.contacts.contact_list)
 
     def create_broker(self, watch=False):
         while True:
@@ -236,9 +257,10 @@ class ProxyActor(Actor):
                     # others are connected to that port already. handle this
                     # situation.
 
-                    print "TODO: TEST THIS! broker_client disconnecting from itself..."
-                    self.link.broker_client.pub.disconnect("tcp://%s:%d" % ("localhost", self.rx_port))
-                    self.link.broker_client.sub.disconnect("tcp://%s:%d" % ("localhost", self.tx_port))
+                    print "TODO: break this short circuit!"
+                    #print "TODO: TEST THIS! broker_client disconnecting from itself..."
+                    #self.link.broker_client.pub.disconnect("tcp://%s:%d" % ("localhost", self.rx_port))
+                    #self.link.broker_client.sub.disconnect("tcp://%s:%d" % ("localhost", self.tx_port))
 
                 break  # quit trying to create a broker
             except Exception as e:
@@ -252,91 +274,43 @@ class ProxyActor(Actor):
         #print "receive propogating message to others...", msg
         self.server_send(msg)
         self.client_send(msg)
-
-    def handle_ProxyActorMessage(self, msg):
-        print ".......... ProxyActorMessage received"
-        if msg.new_entry:
-            print "found new entry, adding current contact list..."
-            self.contacts.add_from_contact_list(msg.new_entry)
-            #pdb.set_trace()
-            self.broker_send(ProxyActorMessage(
-                contact_list=self.contacts.contact_list,
-                reply_to=msg.msg_id))
-
-        if msg.contact_list:
-            print "merged with full contact list... "
-            self.contacts.add_from_contact_list(msg.contact_list)
-            self.connect_to_contacts(link_methods=self.link.client, contact_list=msg.contact_list)
-
-        #pprint(self.contacts.contact_list)
+        self.broker_send(msg)
 
     def server_sub_receiver(self):
         while True:
             message = self.link.server.sub.recv()
-            print "server sub received: ", message
-            msg = self.filter_unpack(message)
-            if msg:
-                self.send_to_inner_actors(msg)
+            self.broker_all_receive(message, 'server sub')
             gevent.sleep()
 
     def client_sub_receiver(self):
         while True:
             message = self.link.client.sub.recv()
-            #print "client sub received: ", message
-            msg = self.filter_unpack(message)
-            if msg:
-                self.send_to_inner_actors(msg)
+            self.broker_all_receive(message, 'client sub')
             gevent.sleep()
 
     def broker_sub_receiver(self):
         while True:
             message = self.link.broker.sub.recv()
-            print "broker sub received: ", message
-            msg = self.filter_unpack(message)
-            if msg:
-                self.send_to_inner_actors(msg)
+            self.broker_all_receive(message, 'broker sub')
             gevent.sleep()
-
-    def add_sender_to_msg(self, msg):
-        try:
-            assert msg.sender[-1] == self.actor_id
-        except:
-            msg.sender.append(self.actor_id)
 
     def broker_client_sub_receiver(self):
         while True:
             message = self.link.broker_client.sub.recv()
-            print "broker_client sub received: ", message
-
-            # process the control message
-            msg = self.filter_unpack(message)
-            if msg:
-                if type(msg) == type(ProxyActorMessage()):
-                    gevent.spawn(self.handle_ProxyActorMessage, msg)
+            self.broker_all_receive(message, 'broker-client sub')
             gevent.sleep()
 
-    def filter_unpack(self, message):
-        msg_timeout = 1
-        msg = unpack(message)
-        if self.actor_id in msg.sender:
-            print "dropping short circuit message..."
-            pass
-        elif msg.msg_id in [i[0] for i in self.msg_history]:
-            print "dropping duplicate message..."
-        elif msg.timestamp + msg_timeout < time.time():
-            print "dropping timeouted message (%d secs. old)" % (time.time() - msg.timestamp)
-        else:
-            self.msg_history.append([msg.msg_id, msg.timestamp])
-            # TODO: find more efficient way to do this
-            if self.msg_history:
-                if self.msg_history[0][1] + msg_timeout< time.time():
-                    del self.msg_history[0]
-            return msg
-        return None
+    def broker_all_receive(self, message, caller=''):
+        msg = self.filter_unpack(message)
+        if msg:
+            self.send_to_inner_actors(msg)
+            if caller:
+                print caller, " received msg..."
 
     def server_send(self, msg):
         self.add_sender_to_msg(msg)
         msg.debug.append("server-send")
+        print "server_send..."
         message = pack(msg)
         self.link.server.pub.send(message)
 
@@ -347,16 +321,49 @@ class ProxyActor(Actor):
         self.link.client.pub.send(message)
 
     def broker_send(self, msg):
-        self.add_sender_to_msg(msg)
-        msg.debug.append("broker/broker-client-send")
-        message = pack(msg)
-
         if self.this_is_the_broker:
+            self.add_sender_to_msg(msg)
+            msg.debug.append("broker-send")
+            message = pack(msg)
             self.link.broker.pub.send(message)
-        self.link.broker_client.pub.send(message)
 
     def broker_client_send(self, msg):
+        self.add_sender_to_msg(msg)
+        msg.debug.append("broker-client-send")
+        message = pack(msg)
+        self.link.broker_client.pub.send(message)
+
+    def broker_all_send(self, msg):
         self.broker_send(msg)
+        self.broker_client_send(msg)
+
+    def add_sender_to_msg(self, msg):
+        if self.actor_id not in msg.sender:
+            msg.sender.append(self.actor_id)
+
+    def filter_unpack(self, message):
+        msg_timeout = 1
+        msg = unpack(message)
+        if self.actor_id in msg.sender:
+            print "dropping short circuit message...", msg.msg_id
+            pprint(self.msg_history)
+            pass
+        elif msg.msg_id in [i[0] for i in self.msg_history]:
+            print "dropping duplicate message...", msg.msg_id
+            pprint(self.msg_history)
+            pass
+        elif msg.timestamp + msg_timeout < time.time():
+            print "dropping timeouted message (%d secs. old)" % (time.time() - msg.timestamp)
+        else:
+            self.msg_history.append([msg.msg_id, msg.timestamp])
+
+            # Erase messages that will be filtered via "timeout" filter already
+            # TODO: find more efficient way to do this
+            if self.msg_history:
+                if self.msg_history[0][1] + msg_timeout< time.time():
+                    del self.msg_history[0]
+            return msg
+        return None
 
     def send_to_inner_actors(self, msg):
         if type(msg) == type(ProxyActorMessage()):
@@ -366,9 +373,6 @@ class ProxyActor(Actor):
             self.add_sender_to_msg(msg)
             self.mgr.inbox.put(msg)
 
-    def forward_messages_via_broker(self, msg):
-        self.broker_send(msg)
-
     def cleanup(self):
         print "cleanup..."
 
@@ -377,7 +381,6 @@ class ProxyActor(Actor):
             self.link[l].pub.close()
 
         self.context.term()
-        
 
 if __name__ == "__main__":
     ProxyActor().join()

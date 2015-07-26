@@ -21,6 +21,7 @@ class ActorBase(gevent.Greenlet):
         self.actor_id = str(uuid.uuid4())
         if start_on_init:
             self.start()
+        self.msg_history = []
 
         atexit.register(self.cleanup)
 
@@ -48,23 +49,44 @@ class ActorBase(gevent.Greenlet):
         def get_message():
             while self.running:
                 message = self.inbox.get()
+                message = self.filter_msg(message)
+                if message:
+                    gevent.spawn(self.receive, message)
+                    #print("message handler spawned!!")
 
-                gevent.spawn(self.receive, message)
-                #print("message handler spawned!!")
-
-                # pass the XYZMessage to "handle_XYZMessage()"
-                # function if such a function exists:
-                handler_func_name = "handle_" + message.__class__.__name__
-                handler_func = getattr(self, handler_func_name, None)
-                if callable(handler_func):
-                    gevent.spawn(handler_func, message)
-
+                    # pass the XYZMessage to "handle_XYZMessage()"
+                    # function if such a function exists:
+                    handler_func_name = "handle_" + message.__class__.__name__
+                    handler_func = getattr(self, handler_func_name, None)
+                    if callable(handler_func):
+                        gevent.spawn(handler_func, message)
 
         a = gevent.spawn(get_message)
         b = gevent.spawn(self.action)
-
         gevent.joinall([a, b])
 
+
+    def filter_msg(self, msg):
+        msg_timeout = 1
+        if self.actor_id in msg.sender:
+            print "actor dropping short circuit message...", msg.msg_id
+            pprint(self.msg_history)
+            pass
+        elif msg.msg_id in [i[0] for i in self.msg_history]:
+            print "actor dropping duplicate message...", msg.msg_id
+            pprint(self.msg_history)
+        elif msg.timestamp + msg_timeout < time.time():
+            print "actor dropping timeouted message (%d secs. old)" % (time.time() - msg.timestamp)
+        else:
+            self.msg_history.append([msg.msg_id, msg.timestamp])
+
+            # Erase messages that will be filtered via "timeout" filter already
+            # TODO: find more efficient way to do this
+            if self.msg_history:
+                if self.msg_history[0][1] + msg_timeout< time.time():
+                    del self.msg_history[0]
+            return msg
+        return None
 
 class Actor(ActorBase):
 
@@ -80,10 +102,7 @@ class Actor(ActorBase):
         assert(isinstance(msg, Message))
 
         msg.sender.append(self.actor_id)
-
-        if msg.send_to_itself:
-            msg.send_to_itself = None
-            self.inbox.put(msg)
+        msg.debug.append("actor itself")
 
         self.mgr.inbox.put(msg)
 
@@ -119,12 +138,13 @@ class ActorManager(ActorBase):
         assert(isinstance(msg, Message))
 
         for actor in self.actors:
+            #print "manager forwarding message: ", msg.sender, msg.timestamp, msg.debug
             if actor.actor_id not in msg.sender:
+                msg.debug.append('manager')
                 actor.inbox.put(msg)
 
     def register(self, actor_instance):
         self.actors.append(actor_instance)
-
 
 
 if __name__ == "__main__":

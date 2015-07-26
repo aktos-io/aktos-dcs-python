@@ -6,12 +6,15 @@ from aktos_dcs.Messages import *
 
 class Ponger(Actor):
     def handle_PongMessage(self, msg):
-        print "Ponger got pong message:", msg
+        print "Ponger got pong message:", msg.msg_id, (time.time() - msg.timestamp), msg.debug
         sleep(2)
         self.send(PingMessage(text="Hello pinger, this is ponger 1!"))
 
 if __name__ == "__main__":
-    ProxyActor(my_ip="192.168.2.115")
+    p = ProxyActor()
     ponger = Ponger()
-    ponger.send(PingMessage(text="startup message from ponger cca..."))
+    while True:
+        ponger.send(PingMessage(text="startup message from ponger cca..."))
+        sleep(1)
+
     ponger.join()
