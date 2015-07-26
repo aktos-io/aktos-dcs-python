@@ -6,6 +6,7 @@ from gevent.queue import Queue
 
 import atexit
 import traceback
+from pprint import pprint
 
 from cca_messages import *
 import uuid
@@ -48,35 +49,35 @@ class ActorBase(gevent.Greenlet):
 
         def get_message():
             while self.running:
-                message = self.inbox.get()
-                message = self.filter_msg(message)
-                if message:
-                    gevent.spawn(self.receive, message)
+                msg = self.inbox.get()
+                msg = self.filter_msg(msg)
+                if msg:
+                    gevent.spawn(self.receive, msg)
                     #print("message handler spawned!!")
 
                     # pass the XYZMessage to "handle_XYZMessage()"
                     # function if such a function exists:
-                    handler_func_name = "handle_" + message.__class__.__name__
+                    handler_func_name = "handle_" + msg.__class__.__name__
                     handler_func = getattr(self, handler_func_name, None)
                     if callable(handler_func):
-                        gevent.spawn(handler_func, message)
+                        gevent.spawn(handler_func, msg)
 
         a = gevent.spawn(get_message)
         b = gevent.spawn(self.action)
         gevent.joinall([a, b])
 
-
     def filter_msg(self, msg):
         msg_timeout = 1
         if self.actor_id in msg.sender:
-            print "actor dropping short circuit message...", msg.msg_id
+            print "dropping short circuit message...", msg.msg_id
             pprint(self.msg_history)
             pass
         elif msg.msg_id in [i[0] for i in self.msg_history]:
-            print "actor dropping duplicate message...", msg.msg_id
+            print "dropping duplicate message...", msg.msg_id
             pprint(self.msg_history)
+            pass
         elif msg.timestamp + msg_timeout < time.time():
-            print "actor dropping timeouted message (%d secs. old)" % (time.time() - msg.timestamp)
+            print "dropping timeouted message (%d secs. old)" % (time.time() - msg.timestamp)
         else:
             self.msg_history.append([msg.msg_id, msg.timestamp])
 

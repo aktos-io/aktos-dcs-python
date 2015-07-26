@@ -257,10 +257,10 @@ class ProxyActor(Actor):
                     # others are connected to that port already. handle this
                     # situation.
 
-                    print "TODO: break this short circuit!"
-                    #print "TODO: TEST THIS! broker_client disconnecting from itself..."
-                    #self.link.broker_client.pub.disconnect("tcp://%s:%d" % ("localhost", self.rx_port))
-                    #self.link.broker_client.sub.disconnect("tcp://%s:%d" % ("localhost", self.tx_port))
+                    # this is tested
+                    print "broker_client disconnecting from itself..."
+                    self.link.broker_client.pub.disconnect("tcp://%s:%d" % ("localhost", self.rx_port))
+                    self.link.broker_client.sub.disconnect("tcp://%s:%d" % ("localhost", self.tx_port))
 
                 break  # quit trying to create a broker
             except Exception as e:
@@ -317,6 +317,7 @@ class ProxyActor(Actor):
     def client_send(self, msg):
         self.add_sender_to_msg(msg)
         msg.debug.append("client-send")
+        print "client_send..."
         message = pack(msg)
         self.link.client.pub.send(message)
 
@@ -324,6 +325,7 @@ class ProxyActor(Actor):
         if self.this_is_the_broker:
             self.add_sender_to_msg(msg)
             msg.debug.append("broker-send")
+            print "broker_send..."
             message = pack(msg)
             self.link.broker.pub.send(message)
 
@@ -331,6 +333,7 @@ class ProxyActor(Actor):
         self.add_sender_to_msg(msg)
         msg.debug.append("broker-client-send")
         message = pack(msg)
+        print "broker_client_send..."
         self.link.broker_client.pub.send(message)
 
     def broker_all_send(self, msg):
@@ -342,28 +345,8 @@ class ProxyActor(Actor):
             msg.sender.append(self.actor_id)
 
     def filter_unpack(self, message):
-        msg_timeout = 1
         msg = unpack(message)
-        if self.actor_id in msg.sender:
-            print "dropping short circuit message...", msg.msg_id
-            pprint(self.msg_history)
-            pass
-        elif msg.msg_id in [i[0] for i in self.msg_history]:
-            print "dropping duplicate message...", msg.msg_id
-            pprint(self.msg_history)
-            pass
-        elif msg.timestamp + msg_timeout < time.time():
-            print "dropping timeouted message (%d secs. old)" % (time.time() - msg.timestamp)
-        else:
-            self.msg_history.append([msg.msg_id, msg.timestamp])
-
-            # Erase messages that will be filtered via "timeout" filter already
-            # TODO: find more efficient way to do this
-            if self.msg_history:
-                if self.msg_history[0][1] + msg_timeout< time.time():
-                    del self.msg_history[0]
-            return msg
-        return None
+        return self.filter_msg(msg)
 
     def send_to_inner_actors(self, msg):
         if type(msg) == type(ProxyActorMessage()):
