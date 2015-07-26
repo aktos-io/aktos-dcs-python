@@ -39,6 +39,7 @@ class Message(dict):
     timestamp = 0  # message creation unix time
     send_to_itself = False
     msg_id = ""  # unique id of message
+    debug = []  # debug string
 
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
@@ -50,7 +51,7 @@ class Message(dict):
             self.timestamp = time.time()
 
         try:
-            assert(self.sender)
+            assert self.sender
         except:
             self.sender = list()  # unique ids of message sender and the forwarders
 

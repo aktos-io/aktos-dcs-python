@@ -57,7 +57,7 @@ class ActorBase(gevent.Greenlet):
                 handler_func_name = "handle_" + message.__class__.__name__
                 handler_func = getattr(self, handler_func_name, None)
                 if callable(handler_func):
-                    handler_func(message)
+                    gevent.spawn(handler_func, message)
 
 
         a = gevent.spawn(get_message)
