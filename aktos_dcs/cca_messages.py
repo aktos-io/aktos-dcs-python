@@ -8,25 +8,21 @@ import time
 import uuid
 
 # message functions
-"""
-class MessageEncoder(json.JSONEncoder):
-    def default(self, o):
-        m = o.__dict__
-        return m
-"""
-
 def message_decoder(json_string):
     try:
         j = json.loads(json_string)
         c = globals()[j["cls"]]
         del(j["cls"])
-        #print "j:", j
         o = c(**j)
     except Exception as e:
-        #print "error unpacking: ", e.message
-        raise
-    finally:
-        return o
+        reason = "(other reasons)"
+        try:
+            assert not pack(json_string)
+        except AssertionError:
+            reason = "message is not JSON string, pack first."
+        raise Exception("Error unpacking message: %s" % reason)
+
+    return o
 
 def unpack(json_string):
     return message_decoder(json_string)
@@ -67,6 +63,7 @@ class Message(dict):
         self.msg_id = str(uuid.uuid4())
         self.sender = []
         self.debug = []
+        self.cls = self.__class__.__name__
 
         # this should be the last one
         for k, v in kwargs.items():
@@ -125,6 +122,7 @@ class UserInputMessage(Message):
         group_num = str(self.msg_id)[0]
         return int(group_num)
 
+
 class ScreenMessage(Message):
     screen_str = ""
 
@@ -132,30 +130,48 @@ class ScreenMessage(Message):
 class AlarmMessage(Message):
     reason = ""
 
+
 class AlarmResetMessage(AlarmMessage):
     pass
 
+
 class AlarmGenJumpToState(Message):
-    state=0
+    state = 0
 
 
 class PingMessage(Message):
     text = ""
 
+
 class PongMessage(PingMessage):
     pass
-    
+
+
 class aMessage(Message):
     direction = ""  # up, down, none
 
 
-if __name__ == "__main__":
-    a = KeypadMessage(key="d", edge="rising_edge")
+def test():
+    a = Message(key="d", edge="rising_edge")
+    a.sender.append("naber")
 
-    print pack(a)
-    print a
-    b = unpack(a)
-    print b
+    b = KeypadMessage()
+    b.sender.append("iyidir")
+
+    assert len(str(a)) == len(pack(a))
+    assert a == unpack(pack(a))
+    assert len(str(b)) == len(pack(b))
+    assert b == unpack(pack(b))
+    print "all tests OK..."
+
+if __name__ == "__main__":
+    try:
+        test()
+    except:
+        raise
+
+        import pdb
+        pdb.set_trace()
 
 
 
