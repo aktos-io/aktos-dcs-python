@@ -67,7 +67,7 @@ class ActorBase(gevent.Greenlet):
         gevent.joinall([a, b])
 
     def filter_msg(self, msg):
-        msg_timeout = 1
+        msg_timeout = 10
         if self.actor_id in msg.sender:
             #print "dropping short circuit message...", msg.msg_id
             #pprint(self.msg_history)
@@ -84,7 +84,7 @@ class ActorBase(gevent.Greenlet):
             # Erase messages that will be filtered via "timeout" filter already
             # TODO: find more efficient way to do this
             if self.msg_history:
-                if self.msg_history[0][1] + msg_timeout< time.time():
+                if self.msg_history[0][1] + msg_timeout < time.time():
                     del self.msg_history[0]
             return msg
         return None

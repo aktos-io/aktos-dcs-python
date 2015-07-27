@@ -221,7 +221,8 @@ class ProxyActor(Actor):
             local_broker_contact = DcsContactList("localhost:%d:%d" % (self.rx_port, self.tx_port))
             self.connect_to_contacts('broker_client', local_broker_contact.contact_list)
 
-        self.connect_to_contacts('broker_client', self.contacts.contact_list)
+        other_brokers = DcsContactList(self.brokers)
+        self.connect_to_contacts('broker_client', other_brokers.contact_list)
 
         gevent.sleep(2)  # TODO: remove this sleep
 
