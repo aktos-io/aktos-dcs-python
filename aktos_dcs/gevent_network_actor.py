@@ -310,7 +310,8 @@ class ProxyActor(Actor):
 
     def broker_all_receive(self, message, caller=''):
         if caller:
-            print caller, " received msg..."
+            #print caller, " received msg..."
+            pass
 
         try:
             msg = unpack(message)
@@ -325,14 +326,14 @@ class ProxyActor(Actor):
     def server_send(self, msg):
         self.add_sender_to_msg(msg)
         msg.debug.append("server-send")
-        print "server_send..."
+        #print "server_send..."
         message = pack(msg)
         self.link.server.pub.send(message)
 
     def client_send(self, msg):
         self.add_sender_to_msg(msg)
         msg.debug.append("client-send")
-        print "client_send..."
+        #print "client_send..."
         message = pack(msg)
         self.link.client.pub.send(message)
 
@@ -340,7 +341,7 @@ class ProxyActor(Actor):
         if self.this_is_the_broker:
             self.add_sender_to_msg(msg)
             msg.debug.append("broker-send")
-            print "broker_send..."
+            #print "broker_send..."
             message = pack(msg)
             self.link.broker.pub.send(message)
 
@@ -348,7 +349,7 @@ class ProxyActor(Actor):
         self.add_sender_to_msg(msg)
         msg.debug.append("broker-client-send")
         message = pack(msg)
-        print "broker_client_send..."
+        #print "broker_client_send..."
         self.link.broker_client.pub.send(message)
 
     def broker_all_send(self, msg):
