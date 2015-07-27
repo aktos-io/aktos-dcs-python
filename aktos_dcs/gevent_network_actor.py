@@ -234,9 +234,10 @@ class ProxyActor(Actor):
                 contact_list=self.contacts.contact_list,
                 reply_to=msg.msg_id))
         elif msg.contact_list:
-            print "got full contact list, updating own list and connecting currently alive processes... "
+            print "got full contact list, updating own list... "
             self.contacts.add_from_contact_list(msg.contact_list)
             if msg.reply_to == self.introduction_msg.msg_id:
+                print "connecting whole contact list..."
                 self.connect_to_contacts('client', contact_list=msg.contact_list)
         else:
             print "WARNING: UNHANDLED CONTROL MESSAGE: ", msg
@@ -261,7 +262,7 @@ class ProxyActor(Actor):
                     # others are connected to that port already. handle this
                     # situation.
 
-                    # this is tested
+                    # NOTE: this block is tested and working
                     print "broker_client disconnecting from itself..."
                     self.link.broker_client.pub.disconnect("tcp://%s:%d" % ("localhost", self.rx_port))
                     self.link.broker_client.sub.disconnect("tcp://%s:%d" % ("localhost", self.tx_port))
@@ -281,28 +282,28 @@ class ProxyActor(Actor):
         self.broker_send(msg)
 
     def server_sub_receiver(self):
-        print "server sub receiver started"
+        #print "server sub receiver started"
         while True:
             message = self.link.server.sub.recv()
             self.broker_all_receive(message, 'server sub')
             gevent.sleep()
 
     def client_sub_receiver(self):
-        print "client sub receiver started"
+        #print "client sub receiver started"
         while True:
             message = self.link.client.sub.recv()
             self.broker_all_receive(message, 'client sub')
             gevent.sleep()
 
     def broker_sub_receiver(self):
-        print "broker sub receiver started"
+        #print "broker sub receiver started"
         while True:
             message = self.link.broker.sub.recv()
             self.broker_all_receive(message, 'broker sub')
             gevent.sleep()
 
     def broker_client_sub_receiver(self):
-        print "broker client sub receiver started"
+        #print "broker client sub receiver started"
         while True:
             message = self.link.broker_client.sub.recv()
             self.broker_all_receive(message, 'broker-client sub')
