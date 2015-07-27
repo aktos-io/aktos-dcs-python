@@ -179,6 +179,9 @@ class ProxyActor(Actor):
 
         self.sync_contacts()
 
+        gevent.sleep(2) #TODO: change this with "as soon as connected all of the others"
+
+
     def create_server_on_a_random_port(self):
         self.server_pub_port = self.link.server.pub.bind_to_random_port(addr="tcp://*")
         self.server_sub_port = self.link.server.sub.bind_to_random_port(addr="tcp://*")
@@ -202,6 +205,7 @@ class ProxyActor(Actor):
                     self.link[link_name].pub.connect(rx_addr)
                     self.link[link_name].sub.connect(tx_addr)
                     self.connection_list.append(conn_str)
+
                     #print "full connection list: ", self.connection_list
             else:
                 #print "not connecting to itself: ", contact
