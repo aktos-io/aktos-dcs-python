@@ -151,6 +151,53 @@ class ProxyActor(Actor):
         self.link.client.receiver = self.client_sub_receiver
         self.link.broker_client.receiver = self.broker_client_sub_receiver
 
+
+        self.link.server.sub = self.context.socket(zmq.SUB)
+        self.link.server.sub.setsockopt(zmq.SUBSCRIBE, '')
+
+        self.link.server.pub = self.context.socket(zmq.PUB)
+        self.link.server.pub.setsockopt(zmq.LINGER, 0)
+        self.link.server.pub.setsockopt(zmq.SNDHWM, 2)
+        self.link.server.pub.setsockopt(zmq.SNDTIMEO, 0)
+
+        gevent.spawn(self.link.server.receiver)
+
+        self.link.client.sub = self.context.socket(zmq.SUB)
+        self.link.client.sub.setsockopt(zmq.SUBSCRIBE, '')
+
+        self.link.client.pub = self.context.socket(zmq.PUB)
+        self.link.client.pub.setsockopt(zmq.LINGER, 0)
+        self.link.client.pub.setsockopt(zmq.SNDHWM, 2)
+        self.link.client.pub.setsockopt(zmq.SNDTIMEO, 0)
+
+        gevent.spawn(self.link.client.receiver)
+        
+        self.link.broker.sub = self.context.socket(zmq.SUB)
+        self.link.broker.sub.setsockopt(zmq.SUBSCRIBE, '')
+
+        self.link.broker.pub = self.context.socket(zmq.PUB)
+        self.link.broker.pub.setsockopt(zmq.LINGER, 0)
+        self.link.broker.pub.setsockopt(zmq.SNDHWM, 2)
+        self.link.broker.pub.setsockopt(zmq.SNDTIMEO, 0)
+
+        gevent.spawn(self.link.broker.receiver)
+
+        self.link.broker_client.sub = self.context.socket(zmq.SUB)
+        self.link.broker_client.sub.setsockopt(zmq.SUBSCRIBE, '')
+
+        self.link.broker_client.pub = self.context.socket(zmq.PUB)
+        self.link.broker_client.pub.setsockopt(zmq.LINGER, 0)
+        self.link.broker_client.pub.setsockopt(zmq.SNDHWM, 2)
+        self.link.broker_client.pub.setsockopt(zmq.SNDTIMEO, 0)
+
+        gevent.spawn(self.link.broker_client.receiver)
+
+        self.create_server_on_a_random_port()
+
+
+
+
+        """
         # create sub, pub and spawn the receivers
         for l in dict(self.link).values():
             l.sub = self.context.socket(zmq.SUB)
@@ -162,6 +209,7 @@ class ProxyActor(Actor):
             l.pub.setsockopt(zmq.SNDTIMEO, 0)
 
             gevent.spawn(l.receiver)
+        """
 
         # create or watch to create address broker
         self.this_is_the_broker = False
@@ -171,17 +219,19 @@ class ProxyActor(Actor):
             gevent.spawn(self.create_broker, watch=True)
             # server_pub will serve on a random port
 
-        self.server_pub_port = self.link.server.pub.bind_to_random_port(addr="tcp://*")
-        self.server_sub_port = self.link.server.pub.bind_to_random_port(addr="tcp://*")
-        print "this actor's server ports are: ", self.server_sub_port, self.server_pub_port
-
-        self.this_contact = DcsContactList(ip=self.my_ip, rx=self.server_sub_port, tx=self.server_pub_port)
-        self.contacts.add_from_contact_list(self.this_contact.contact_list)
 
         # add proxy brokers to contact list
         self.contacts.add_from_contact_str(self.proxy_brokers)
 
         self.sync_contacts()
+
+    def create_server_on_a_random_port(self):
+        self.server_pub_port = self.link.server.pub.bind_to_random_port(addr="tcp://*")
+        self.server_sub_port = self.link.server.sub.bind_to_random_port(addr="tcp://*")
+        print "this actor's server ports are: ", self.server_sub_port, self.server_pub_port
+
+        self.this_contact = DcsContactList(ip=self.my_ip, rx=self.server_sub_port, tx=self.server_pub_port)
+        self.contacts.add_from_contact_list(self.this_contact.contact_list)
 
     def connect_to_contacts(self, link_name, contact_list=[]):
         rx, tx = sub, pub = 0, 1
@@ -277,35 +327,46 @@ class ProxyActor(Actor):
         self.broker_send(msg)
 
     def server_sub_receiver(self):
+        print "server sub receiver started"
         while True:
             message = self.link.server.sub.recv()
             self.broker_all_receive(message, 'server sub')
             gevent.sleep()
 
     def client_sub_receiver(self):
+        print "client sub receiver started"
         while True:
             message = self.link.client.sub.recv()
             self.broker_all_receive(message, 'client sub')
             gevent.sleep()
 
     def broker_sub_receiver(self):
+        print "broker sub receiver started"
         while True:
             message = self.link.broker.sub.recv()
             self.broker_all_receive(message, 'broker sub')
             gevent.sleep()
 
     def broker_client_sub_receiver(self):
+        print "broker client sub receiver started"
         while True:
             message = self.link.broker_client.sub.recv()
             self.broker_all_receive(message, 'broker-client sub')
             gevent.sleep()
 
     def broker_all_receive(self, message, caller=''):
-        msg = self.filter_unpack(message)
+        if caller:
+            print caller, " received msg..."
+
+        try:
+            msg = unpack(message)
+        except Exception, e:
+            print "Exception occured while unpacking: ", e.message
+            return
+
+        msg = self.filter_msg(msg)
         if msg:
             self.send_to_inner_actors(msg)
-            if caller:
-                print caller, " received msg..."
 
     def server_send(self, msg):
         self.add_sender_to_msg(msg)
@@ -343,10 +404,6 @@ class ProxyActor(Actor):
     def add_sender_to_msg(self, msg):
         if self.actor_id not in msg.sender:
             msg.sender.append(self.actor_id)
-
-    def filter_unpack(self, message):
-        msg = unpack(message)
-        return self.filter_msg(msg)
 
     def send_to_inner_actors(self, msg):
         if type(msg) == type(ProxyActorMessage()):

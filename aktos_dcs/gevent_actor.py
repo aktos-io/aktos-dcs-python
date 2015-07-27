@@ -69,12 +69,12 @@ class ActorBase(gevent.Greenlet):
     def filter_msg(self, msg):
         msg_timeout = 1
         if self.actor_id in msg.sender:
-            print "dropping short circuit message...", msg.msg_id
-            pprint(self.msg_history)
+            #print "dropping short circuit message...", msg.msg_id
+            #pprint(self.msg_history)
             pass
         elif msg.msg_id in [i[0] for i in self.msg_history]:
-            print "dropping duplicate message...", msg.msg_id
-            pprint(self.msg_history)
+            #print "dropping duplicate message...", msg.msg_id
+            #pprint(self.msg_history)
             pass
         elif msg.timestamp + msg_timeout < time.time():
             print "dropping timeouted message (%d secs. old)" % (time.time() - msg.timestamp)
