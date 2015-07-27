@@ -64,7 +64,7 @@ class Message(dict):
 
 
 class ProxyActorMessage(Message):
-    contact_list = {}
+    contact_list = []
     new_contact_list = []
     reply_to = ""
 
@@ -155,7 +155,7 @@ def test():
     b = ProxyActorMessage()
     b_sender = "baz"
     b.sender.append(b_sender)
-    b.contact_list["foo-foo"] = "bar-bar"
+    b.contact_list.append({"foo": "bar"})
 
     assert len(str(a)) == len(pack(a))
     assert a == unpack(pack(a))
@@ -165,12 +165,12 @@ def test():
     assert b == unpack(pack(b))
     assert b.sender == [b_sender]
     assert b.cls == 'ProxyActorMessage'
-    assert b.contact_list == {'foo-foo': 'bar-bar'}
+    assert b.contact_list == [{"foo": "bar"}]
 
     c = ProxyActorMessage()
-    c.contact_list["baz-baz"] = "foo-bar"
+    c.contact_list.append({'baz': 'foobar'})
 
-    assert c.contact_list == {'baz-baz': 'foo-bar'}
+    assert c.contact_list == [{'baz': 'foobar'}]
 
     print "all tests went OK..."
 
