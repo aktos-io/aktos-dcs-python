@@ -33,17 +33,30 @@ def pack(msg):
     assert(isinstance(msg, Message))
     return json.dumps(dict(msg))
 
+import copy
+
 class Message(dict):
+
+    sender = []
+    debug = []
+    timestamp = time.time()
+
     def __init__(self, *args, **kwargs):
+        for attr in dir(self):
+            if not callable(getattr(self, attr)) and not attr.startswith("__"):
+                #print attr
+                default_val = getattr(self, attr)
+                try:
+                    assert kwargs[attr] != default_val
+                except:
+                    kwargs[attr] = copy.deepcopy(default_val)
+
         dict.__init__(self, *args, **kwargs)
         self.__dict__ = self
 
-        self.debug = []
-        self.sender = []
-        self.timestamp = time.time()
+        #self.timestamp = time.time()
         self.msg_id = str(uuid.uuid4())
         self.cls = self.__class__.__name__
-
 
         # this should be the last one
         for k, v in kwargs.items():
@@ -51,30 +64,9 @@ class Message(dict):
 
 
 class ProxyActorMessage(Message):
-
-    def __init__(self, *args, **kwargs):
-        """
-        kwargs['contact_list'] = dict()
-        kwargs['new_contact_list'] = dict()
-        kwargs['reply_to'] = ""
-        """
-        try:
-            assert kwargs['contact_list'] != {}
-        except:
-            kwargs['contact_list'] = {}
-
-        try:
-            assert kwargs['new_contact_list'] != []
-        except:
-            kwargs['new_contact_list'] = []
-
-        try:
-            assert kwargs['reply_to'] != ""
-        except:
-            kwargs['reply_to'] = ""
-
-
-        Message.__init__(self, **kwargs)
+    contact_list = {}
+    new_contact_list = []
+    reply_to = ""
 
 
 
