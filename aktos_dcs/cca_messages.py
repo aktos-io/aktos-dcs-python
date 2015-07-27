@@ -39,7 +39,6 @@ class Message(dict):
 
     sender = []
     debug = []
-    timestamp = time.time()
 
     def __init__(self, *args, **kwargs):
         for attr in dir(self):
@@ -54,7 +53,7 @@ class Message(dict):
         dict.__init__(self, *args, **kwargs)
         self.__dict__ = self
 
-        #self.timestamp = time.time()
+        self.timestamp = time.time()
         self.msg_id = str(uuid.uuid4())
         self.cls = self.__class__.__name__
 
