@@ -15,11 +15,13 @@ def message_decoder(json_string):
         del(j["cls"])
         o = c(**j)
     except Exception as e:
-        reason = "(other reasons)"
+        reason = e.message
         try:
-            assert not pack(json_string)
-        except AssertionError:
+            a = pack(json_string)
+            assert a.cls == json_string.cls
             reason = "message is not JSON string, pack first."
+        except:
+            pass
         raise Exception("Error unpacking message: %s" % reason)
 
     return o
@@ -29,41 +31,19 @@ def unpack(json_string):
 
 def pack(msg):
     assert(isinstance(msg, Message))
-    msg.cls = msg.__class__.__name__
-    #return json.dumps(msg, cls=MessageEncoder)
     return json.dumps(dict(msg))
 
 class Message(dict):
-    """
-    msg_id = ""  # unique id of message
-    timestamp = time.time()
-    msg_id = str(uuid.uuid4())
-    sender = []
-    debug = []
-    """
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
         self.__dict__ = self
 
-        """
-        try:
-            for attr in dir(self):
-                if not callable(getattr(self, attr)) and not attr.startswith("__"):
-                    #print attr
-                    default_val = getattr(self, attr)
-                    delattr(Message, attr)
-                    setattr(self, attr, default_val)
-        except:
-            import pdb
-            pdb.set_trace()
-
-        """
-        self.msg_id = ""  # unique id of message
+        self.debug = []
+        self.sender = []
         self.timestamp = time.time()
         self.msg_id = str(uuid.uuid4())
-        self.sender = []
-        self.debug = []
         self.cls = self.__class__.__name__
+
 
         # this should be the last one
         for k, v in kwargs.items():
@@ -71,9 +51,33 @@ class Message(dict):
 
 
 class ProxyActorMessage(Message):
-    contact_list = dict()
-    new_contact_list = dict()
-    reply_to = ""
+
+    def __init__(self, *args, **kwargs):
+        """
+        kwargs['contact_list'] = dict()
+        kwargs['new_contact_list'] = dict()
+        kwargs['reply_to'] = ""
+        """
+        try:
+            assert kwargs['contact_list'] != {}
+        except:
+            kwargs['contact_list'] = {}
+
+        try:
+            assert kwargs['new_contact_list'] != []
+        except:
+            kwargs['new_contact_list'] = []
+
+        try:
+            assert kwargs['reply_to'] != ""
+        except:
+            kwargs['reply_to'] = ""
+
+
+        Message.__init__(self, **kwargs)
+
+
+
 
 
 
@@ -153,16 +157,30 @@ class aMessage(Message):
 
 def test():
     a = Message(key="d", edge="rising_edge")
-    a.sender.append("naber")
+    a_sender = "foobar"
+    a.sender.append(a_sender)
 
-    b = KeypadMessage()
-    b.sender.append("iyidir")
+    b = ProxyActorMessage()
+    b_sender = "baz"
+    b.sender.append(b_sender)
+    b.contact_list["foo-foo"] = "bar-bar"
 
     assert len(str(a)) == len(pack(a))
     assert a == unpack(pack(a))
+    assert a.sender == [a_sender]
+
     assert len(str(b)) == len(pack(b))
     assert b == unpack(pack(b))
-    print "all tests OK..."
+    assert b.sender == [b_sender]
+    assert b.cls == 'ProxyActorMessage'
+    assert b.contact_list == {'foo-foo': 'bar-bar'}
+
+    c = ProxyActorMessage()
+    c.contact_list["baz-baz"] = "foo-bar"
+
+    assert c.contact_list == {'baz-baz': 'foo-bar'}
+
+    print "all tests went OK..."
 
 if __name__ == "__main__":
     try:
