@@ -13,8 +13,6 @@ class Ponger(Actor):
 if __name__ == "__main__":
     p = ProxyActor()
     ponger = Ponger()
-    while True:
-        ponger.send(PingMessage(text="startup message from ponger cca..."))
-        sleep(1)
+    ponger.send(PingMessage(text="startup message from ponger 1..."))
 
     ponger.join()
