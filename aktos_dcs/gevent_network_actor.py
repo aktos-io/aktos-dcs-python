@@ -151,53 +151,6 @@ class ProxyActor(Actor):
         self.link.client.receiver = self.client_sub_receiver
         self.link.broker_client.receiver = self.broker_client_sub_receiver
 
-
-        self.link.server.sub = self.context.socket(zmq.SUB)
-        self.link.server.sub.setsockopt(zmq.SUBSCRIBE, '')
-
-        self.link.server.pub = self.context.socket(zmq.PUB)
-        self.link.server.pub.setsockopt(zmq.LINGER, 0)
-        self.link.server.pub.setsockopt(zmq.SNDHWM, 2)
-        self.link.server.pub.setsockopt(zmq.SNDTIMEO, 0)
-
-        gevent.spawn(self.link.server.receiver)
-
-        self.link.client.sub = self.context.socket(zmq.SUB)
-        self.link.client.sub.setsockopt(zmq.SUBSCRIBE, '')
-
-        self.link.client.pub = self.context.socket(zmq.PUB)
-        self.link.client.pub.setsockopt(zmq.LINGER, 0)
-        self.link.client.pub.setsockopt(zmq.SNDHWM, 2)
-        self.link.client.pub.setsockopt(zmq.SNDTIMEO, 0)
-
-        gevent.spawn(self.link.client.receiver)
-        
-        self.link.broker.sub = self.context.socket(zmq.SUB)
-        self.link.broker.sub.setsockopt(zmq.SUBSCRIBE, '')
-
-        self.link.broker.pub = self.context.socket(zmq.PUB)
-        self.link.broker.pub.setsockopt(zmq.LINGER, 0)
-        self.link.broker.pub.setsockopt(zmq.SNDHWM, 2)
-        self.link.broker.pub.setsockopt(zmq.SNDTIMEO, 0)
-
-        gevent.spawn(self.link.broker.receiver)
-
-        self.link.broker_client.sub = self.context.socket(zmq.SUB)
-        self.link.broker_client.sub.setsockopt(zmq.SUBSCRIBE, '')
-
-        self.link.broker_client.pub = self.context.socket(zmq.PUB)
-        self.link.broker_client.pub.setsockopt(zmq.LINGER, 0)
-        self.link.broker_client.pub.setsockopt(zmq.SNDHWM, 2)
-        self.link.broker_client.pub.setsockopt(zmq.SNDTIMEO, 0)
-
-        gevent.spawn(self.link.broker_client.receiver)
-
-        self.create_server_on_a_random_port()
-
-
-
-
-        """
         # create sub, pub and spawn the receivers
         for l in dict(self.link).values():
             l.sub = self.context.socket(zmq.SUB)
@@ -209,7 +162,8 @@ class ProxyActor(Actor):
             l.pub.setsockopt(zmq.SNDTIMEO, 0)
 
             gevent.spawn(l.receiver)
-        """
+
+        self.create_server_on_a_random_port()
 
         # create or watch to create address broker
         self.this_is_the_broker = False
