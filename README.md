@@ -58,19 +58,19 @@ This library depends on `gevent >= 1.0.2` and `pyzmq >= 14.4.0` with `libzmq >= 
 #### Windows: 
 
 * download and install http://aka.ms/vcpython27
-* `easy_install pyzmq gevent`
+* `easy_install pyzmq gevent netifaces`
 
 Windows 8.1 notes:
 
 You may encounter problems while installing gevent via `easy_install` on win8.1. Working solution is:
 
 * download and install http://aka.ms/vcpython27
-* `easy_install greenlet pyzmq`
+* `easy_install greenlet`
 * download and install `gevent` from: https://code.google.com/p/gevent/downloads/list?can=1&q=
 
 #### Linux:
 
-* `sudo easy_install pyzmq gevent`
+* `sudo easy_install pyzmq gevent netifaces`
 
 Debian Wheezy notes: 
 
