@@ -28,7 +28,7 @@
 
 5. connection should be established even if machine A kills its broker
 
-    * run test 4
+    * run test#4
     * kill pinger.py on machine A
     * see they are not messaging anymore
     * run pinger.py on machine A
@@ -40,6 +40,17 @@
     * run foo.py on machine A (without ProxyActor parameter)
     * run bar.py on machine B (without ProxyActor parameter)
     * see foo.py and bar.py can message eachother.
+
+7. detect multiple local IP addresses but prevent from duplicate messages
+
+    * setup additional addresses to machine A and machine B
+    * see you have more than 1 address on machine
+    * see you could ping machine A to B and B to A via each of their addresses
+    * run test#6
+    * see messages are the same as in test#6
+
+
+
 
 
 
