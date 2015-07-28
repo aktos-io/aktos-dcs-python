@@ -6,66 +6,83 @@ except ImportError:
 
 import time
 import uuid
+import copy
 
 # message functions
-class MessageEncoder(json.JSONEncoder):
-    def default(self, o):
-        m = o.__dict__
-        m["class"] = o.__class__.__name__
-        return m
-
 def message_decoder(json_string):
     try:
         j = json.loads(json_string)
-        for i in range(10):
-            try:
-                j = json.loads(j)
-                print "DOUBLE PACKED MESSAGE, err#", i
-            except:
-                break
-        c = globals()[j["class"]]
-        del(j["class"])
-        #print "j:", j
+        c = globals()[j["cls"]]
+        del(j["cls"])
         o = c(**j)
     except Exception as e:
-        #print "error unpacking: ", e.message
-        raise
-    finally:
-        return o
+        reason = e.message
+        try:
+            a = pack(json_string)
+            assert a.cls == json_string.cls
+            reason = "message is not JSON string, pack first."
+        except:
+            pass
+        raise Exception("Error unpacking message: %s" % reason)
+
+    return o
 
 def unpack(json_string):
     return message_decoder(json_string)
 
-def pack(message_obj):
-    if isinstance(message_obj, Message):
-        return json.dumps(message_obj, cls=MessageEncoder)
-    else:
-        return message_obj
-
-class Message(object):
-    sender = None
-    timestamp = 0
-    send_to_itself = False
-    uuid = None
+def pack(msg):
+    assert(isinstance(msg, Message))
+    return json.dumps(dict(msg))
 
 
-    def __init__(self, **kwargs):
+class Message(dict):
+
+    sender = []
+    debug = []
+
+    def __init__(self, *args, **kwargs):
+        for attr in dir(self):
+            if not callable(getattr(self, attr)) and not attr.startswith("__"):
+                #print attr
+                default_val = getattr(self, attr)
+                try:
+                    assert kwargs[attr] != default_val
+                except:
+                    kwargs[attr] = copy.deepcopy(default_val)
+
+        dict.__init__(self, *args, **kwargs)
+        self.__dict__ = self
+
+        self.timestamp = time.time()
+        self.msg_id = str(uuid.uuid4())
+        self.cls = self.__class__.__name__
+
+        # this should be the last one
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-        if not self.sender:
-            self.sender = None
 
-        if not self.timestamp:
-            self.timestamp = time.time()
+class ProxyActorMessage(Message):
+    contact_list = []
+    new_contact_list = []
+    reply_to = ""
 
-        if not self.uuid:
-            self.uuid = uuid.uuid4()
 
-class NetworkActorMessage(Message):
-    joiner_port = 0
-    peers = []
-    broadcasting = False
+class PingMessage(Message):
+    text = ""
+
+
+class PongMessage(PingMessage):
+    pass
+
+
+class FooMessage(PingMessage):
+    pass
+
+class BarMessage(FooMessage):
+    pass
+
+
 
 # TODO: Classes defined below are belong to application. Move them!
 
@@ -112,6 +129,7 @@ class UserInputMessage(Message):
         group_num = str(self.msg_id)[0]
         return int(group_num)
 
+
 class ScreenMessage(Message):
     screen_str = ""
 
@@ -119,60 +137,56 @@ class ScreenMessage(Message):
 class AlarmMessage(Message):
     reason = ""
 
+
 class AlarmResetMessage(AlarmMessage):
     pass
 
+
 class AlarmGenJumpToState(Message):
-    state=0
+    state = 0
 
 
-class PingMessage(Message):
-    text = ""
 
-class PongMessage(PingMessage):
-    pass
-    
+
 class aMessage(Message):
-	direction = ""  # up, down, none
-	
+    direction = ""  # up, down, none
+
+
+def test():
+    a = Message(key="d", edge="rising_edge")
+    a_sender = "foobar"
+    a.sender.append(a_sender)
+
+    b = ProxyActorMessage()
+    b_sender = "baz"
+    b.sender.append(b_sender)
+    b.contact_list.append({"foo": "bar"})
+
+    assert len(str(a)) == len(pack(a))
+    assert a == unpack(pack(a))
+    assert a.sender == [a_sender]
+
+    assert len(str(b)) == len(pack(b))
+    assert b == unpack(pack(b))
+    assert b.sender == [b_sender]
+    assert b.cls == 'ProxyActorMessage'
+    assert b.contact_list == [{"foo": "bar"}]
+
+    c = ProxyActorMessage()
+    c.contact_list.append({'baz': 'foobar'})
+
+    assert c.contact_list == [{'baz': 'foobar'}]
+
+    print "all tests went OK..."
 
 if __name__ == "__main__":
-    a = KeypadMessage(key="d", edge="rising_edge")
+    try:
+        test()
+    except:
+        raise
 
-    print a.pack()
-
-    a = IoMessage(pin_name="d", pin_number="3", edge="rising_edge")
-
-    class aaaa():
-        pin_name = "aa"
-        pin_number = 77
+        import pdb
+        pdb.set_trace()
 
 
-    a = IoMessage(sender=aaaa(), edge="rising_edge")
-
-    print a.pack()
-    print a.pin_name
-    aa = message_decoder(a.pack())
-    print(aa)
-
-    print aa.edge
-    print aa.timestamp
-    print aa.sender
-
-    b = AlarmMessage()
-    print b.pack()
-    print b.reason
-
-    k = UserInputMessage(screen_str="5923847 yluimeka", msg_id=5)
-    print k.get_msg_group()
-
-    l = AlarmGenJumpToState(state=34)
-    print l.state
-
-    print("-"*40)
-
-    print(IoMessage().pack())
-
-    m = IoMessage()
-    print m.curr_val
 
