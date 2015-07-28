@@ -224,6 +224,8 @@ class ProxyActor(Actor):
         other_brokers = DcsContactList(self.brokers)
         self.connect_to_contacts('broker_client', other_brokers.contact_list)
 
+        self.contacts.add_from_contact_list(self.this_contact.contact_list)
+
         gevent.sleep(2)  # TODO: remove this sleep
 
         self.introduction_msg = ProxyActorMessage(new_contact_list=self.contacts.contact_list)
