@@ -2,20 +2,19 @@
 
 Gevent based actor model (inspired from Erlang) used for concurrency. Messaging layer is heavily inspired from [pysage](https://github.com/realtime-system/pysage).  
 
-aktos-dcs uses "addressing broker" to solve "dynamic service discovery" problem. The 'addressing broker' is created, watched for failures and recreated dynamically by alive actors. 
-
+The goal of this library is it's simple to use and it simplifies "dynamic service discovery". See `TESTS.md` for more.
 
 
 ### Distributed coding
 
-Actors can be run concurrently in the
+Actors can be run concurrently
 
-* same process
+* in the same process
 * in the same machine (can take advantage of multiple CPU cores)
 * distributed in Local Area Network
 * distributed across networks and connected via proxies/tunnels (eg. ssh tunnel)
 
-see TESTS.md for more.
+see `TESTS.md` for more.
 
 ### Platforms
 
