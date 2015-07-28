@@ -10,12 +10,12 @@ aktos-dcs uses "addressing broker" to solve "dynamic service discovery" problem.
 
 Actors can be run concurrently in the
 
-    * same process
-    * in the same machine (can take advantage of multiple CPU cores)
-    * distributed in Local Area Network
-    * distributed across networks and connected via proxies/tunnels (eg. ssh tunnel)
+* same process
+* in the same machine (can take advantage of multiple CPU cores)
+* distributed in Local Area Network
+* distributed across networks and connected via proxies/tunnels (eg. ssh tunnel)
 
-    see TESTS.md for more.
+see TESTS.md for more.
 
 ### Platforms
 
