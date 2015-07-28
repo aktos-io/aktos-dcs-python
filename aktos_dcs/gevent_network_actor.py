@@ -2,7 +2,9 @@
 __author__ = 'ceremcem'
 
 import gevent
-from cca_messages import *
+
+from Messages import *
+
 from gevent_actor import Actor
 import zmq.green as zmq
 
