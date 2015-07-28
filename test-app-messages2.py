@@ -12,10 +12,4 @@ class TestActor(Actor):
 if __name__ == "__main__":
     ProxyActor()
     test1 = TestActor()
-
-
-    while True:
-        print "test message 1:"
-        test1.send(TestMessage(text="this is test 1!"))
-        sleep(3)
     test1.join()

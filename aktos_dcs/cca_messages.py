@@ -4,6 +4,8 @@ except ImportError:
     print "WARNING: module simplejson not found, using json insead..."
     import json
 
+
+
 import time
 import uuid
 import copy
@@ -83,7 +85,6 @@ class BarMessage(FooMessage):
     pass
 
 
-
 # TODO: Classes defined below are belong to application. Move them!
 
 class KeypadMessage(Message):
@@ -146,38 +147,50 @@ class AlarmGenJumpToState(Message):
     state = 0
 
 
-
-
-class aMessage(Message):
-    direction = ""  # up, down, none
+# ----------------------
+from Messages import *
+# ----------------------
 
 
 def test():
-    a = Message(key="d", edge="rising_edge")
-    a_sender = "foobar"
-    a.sender.append(a_sender)
+    try:
+        a = Message(key="d", edge="rising_edge")
+        a_sender = "foobar"
+        a.sender.append(a_sender)
 
-    b = ProxyActorMessage()
-    b_sender = "baz"
-    b.sender.append(b_sender)
-    b.contact_list.append({"foo": "bar"})
+        b = ProxyActorMessage()
+        b_sender = "baz"
+        b.sender.append(b_sender)
+        b.contact_list.append({"foo": "bar"})
 
-    assert len(str(a)) == len(pack(a))
-    assert a == unpack(pack(a))
-    assert a.sender == [a_sender]
+        assert len(str(a)) == len(pack(a))
+        assert a == unpack(pack(a))
+        assert a.sender == [a_sender]
 
-    assert len(str(b)) == len(pack(b))
-    assert b == unpack(pack(b))
-    assert b.sender == [b_sender]
-    assert b.cls == 'ProxyActorMessage'
-    assert b.contact_list == [{"foo": "bar"}]
+        assert len(str(b)) == len(pack(b))
+        assert b == unpack(pack(b))
+        assert b.sender == [b_sender]
+        assert b.cls == 'ProxyActorMessage'
+        assert b.contact_list == [{"foo": "bar"}]
 
-    c = ProxyActorMessage()
-    c.contact_list.append({'baz': 'foobar'})
+        c = ProxyActorMessage()
+        c.contact_list.append({'baz': 'foobar'})
 
-    assert c.contact_list == [{'baz': 'foobar'}]
+        assert c.contact_list == [{'baz': 'foobar'}]
 
-    print "all tests went OK..."
+        x = TestMessage(foo="bar")
+        assert x == unpack(pack(x))
+
+        print "all tests went OK..."
+
+    except AssertionError, e:
+        print "ERROR: Something went WRONG!", e.message
+        #raise
+        import pdb
+        pdb.set_trace()
+
+
+
 
 if __name__ == "__main__":
     try:

@@ -88,6 +88,12 @@
     * run bar.py on machine-C
     * see if bar.py@machine-C and foo.py@machine-A are messaging
 
+11. {{AppMessages-test}} test if application specific messages working
+
+    * run test-app-messages.py
+    * run test-app-messages2.py
+    * see if test-app-messages2.py receives messages
+
 
 
 
