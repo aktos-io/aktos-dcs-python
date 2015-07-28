@@ -67,14 +67,22 @@ class ActorBase(gevent.Greenlet):
         gevent.joinall([a, b])
 
     def filter_msg(self, msg):
-        msg_timeout = 10
+        try:
+            assert self.duplicate_history != []
+        except:
+            self.duplicate_history = []
+
+        msg_timeout = 0.1
         if self.actor_id in msg.sender:
-            #print "dropping short circuit message...", msg.msg_id
+            print "dropping short circuit message...", msg.msg_id
             #pprint(self.msg_history)
             pass
         elif msg.msg_id in [i[0] for i in self.msg_history]:
-            #print "dropping duplicate message...", msg.msg_id
-            #pprint(self.msg_history)
+            print "dropping duplicate message..."
+            self.duplicate_history.append([msg.msg_id, msg.debug])
+            l = len(self.duplicate_history)
+            a = 3 if l > 3 else l
+            pprint(self.duplicate_history[-a:])
             pass
         elif msg.timestamp + msg_timeout < time.time():
             print "dropping timeouted message (%d secs. old)" % (time.time() - msg.timestamp)
@@ -103,7 +111,7 @@ class Actor(ActorBase):
         assert(isinstance(msg, Message))
 
         msg.sender.append(self.actor_id)
-        msg.debug.append("actor itself")
+        msg.debug.append("actor")
 
         self.mgr.inbox.put(msg)
 

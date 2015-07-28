@@ -3,12 +3,14 @@ __author__ = 'ceremcem'
 
 import gevent
 from cca_messages import *
-from gevent_actor import Actor, Singleton
+from gevent_actor import Actor
 import zmq.green as zmq
 
 from gevent import socket
 
 from pprint import pprint
+
+import copy
 
 if zmq.zmq_version_info()[0] < 4:
     raise Exception("libzmq version should be >= 4.x")
@@ -25,7 +27,7 @@ def get_local_ip_addresses():
         if i == 'lo':
             continue
         iface = netifaces.ifaddresses(i).get(netifaces.AF_INET)
-        if iface != None:
+        if iface:
             for j in iface:
                 addr = j['addr']
                 if addr != '127.0.0.1':
@@ -78,7 +80,6 @@ class DcsContactList():
 
             example: "192.168.2.55:8012:8013 localhost:9012:9013 82.64.123.233:4567:8907"
         """
-        result = dict()
         broker_list = contact_str.split()
         if broker_list:
             for broker in broker_list:
@@ -220,7 +221,6 @@ class ProxyActor(Actor):
         if not self.this_is_the_broker:
             local_broker_contact = DcsContactList("localhost:%d:%d" % (self.rx_port, self.tx_port))
             self.connect_to_contacts('broker_client', local_broker_contact.contact_list)
-
         other_brokers = DcsContactList(self.brokers)
         self.connect_to_contacts('broker_client', other_brokers.contact_list)
 
@@ -230,6 +230,7 @@ class ProxyActor(Actor):
         self.broker_client_send(self.introduction_msg)
 
     def handle_ProxyActorMessage(self, msg):
+        print "CM delay: ", (time.time() - msg.timestamp)
         if msg.new_contact_list:
             print "got new contact list, merging and redistributing..."
             pprint(msg)
@@ -281,7 +282,7 @@ class ProxyActor(Actor):
             gevent.sleep()
 
     def receive(self, msg):
-        #print "receive propogating message to others...", msg
+        #print "receive propagating message to others...", msg
         self.server_send(msg)
         self.client_send(msg)
         self.broker_send(msg)
@@ -311,7 +312,17 @@ class ProxyActor(Actor):
         #print "broker client sub receiver started"
         while True:
             message = self.link.broker_client.sub.recv()
-            self.broker_all_receive(message, 'broker-client sub')
+            print "broker client got message"
+            #self.broker_all_receive(message, 'broker-client sub')
+            try:
+                msg = unpack(message)
+                msg = self.filter_msg(msg)
+                if type(msg) == type(ProxyActorMessage()):
+                    # handled in handle_ProxyActorMessage function
+                    gevent.spawn(self.handle_ProxyActorMessage, msg)
+            except Exception, e:
+                print "Exception occured while unpacking: ", e.message
+
             gevent.sleep()
 
     def broker_all_receive(self, message, caller=''):
@@ -331,30 +342,35 @@ class ProxyActor(Actor):
 
     def server_send(self, msg):
         self.add_sender_to_msg(msg)
-        msg.debug.append("server-send")
+        msg2 = unpack(pack(msg))
+        msg2.debug.append("server-send")
         #print "server_send..."
-        message = pack(msg)
+        message = pack(msg2)
         self.link.server.pub.send(message)
 
     def client_send(self, msg):
         self.add_sender_to_msg(msg)
-        msg.debug.append("client-send")
+        msg2 = unpack(pack(msg))
+        msg2.debug.append("client-send")
         #print "client_send..."
-        message = pack(msg)
+        message = pack(msg2)
         self.link.client.pub.send(message)
 
     def broker_send(self, msg):
         if self.this_is_the_broker:
+            #pdb.set_trace()
             self.add_sender_to_msg(msg)
-            msg.debug.append("broker-send")
+            msg2 = unpack(pack(msg))
+            msg2.debug.append("broker-send")
             #print "broker_send..."
-            message = pack(msg)
+            message = pack(msg2)
             self.link.broker.pub.send(message)
 
     def broker_client_send(self, msg):
         self.add_sender_to_msg(msg)
-        msg.debug.append("broker-client-send")
-        message = pack(msg)
+        msg2 = unpack(pack(msg))
+        msg2.debug.append("broker-client-send")
+        message = pack(msg2)
         #print "broker_client_send..."
         self.link.broker_client.pub.send(message)
 

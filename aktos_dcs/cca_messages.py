@@ -6,6 +6,7 @@ except ImportError:
 
 import time
 import uuid
+import copy
 
 # message functions
 def message_decoder(json_string):
@@ -33,7 +34,6 @@ def pack(msg):
     assert(isinstance(msg, Message))
     return json.dumps(dict(msg))
 
-import copy
 
 class Message(dict):
 

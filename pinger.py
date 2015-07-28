@@ -7,13 +7,12 @@ from aktos_dcs.Messages import *
 class Pinger(Actor):
     def handle_PingMessage(self, msg):
         print "Pinger got ping message: ", msg.msg_id, (time.time() - msg.timestamp), msg.debug
-        sleep(2)
+        sleep(1)
         self.send(PongMessage(text="Hello ponger, this is pinger 1!"))
 
-
 if __name__ == "__main__":
-    ProxyActor()
+    ProxyActor(brokers="192.168.2.119:5012:5013")
     pinger = Pinger()
-    pinger.send(PongMessage(text="startup message from pinger 1..."))
+    pinger.send(PongMessage(text="startup message from pinger cca..."))
 
-    joinall([pinger])
+    pinger.join()
