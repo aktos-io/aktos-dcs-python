@@ -1,8 +1,6 @@
 __author__ = 'ceremcem'
 
-from aktos_dcs import Actor,  ProxyActor, sleep, joinall
-from aktos_dcs.Messages import *
-
+from aktos_dcs import *
 
 class Ponger(Actor):
     def handle_PongMessage(self, msg):
