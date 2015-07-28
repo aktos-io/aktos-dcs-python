@@ -175,6 +175,7 @@ class ProxyActor(Actor):
             self.create_broker(watch=False)
         except:
             gevent.spawn(self.create_broker, watch=True)
+            self.connect_to_contacts('client', self.contacts.contact_list)
             self.sync_contacts()
 
 
