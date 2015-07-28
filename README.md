@@ -4,44 +4,18 @@ Gevent based actor model (inspired from Erlang) used for concurrency. Messaging 
 
 aktos-dcs uses "addressing broker" to solve "dynamic service discovery" problem. The 'addressing broker' is created, watched for failures and recreated dynamically by alive actors. 
 
-### Actors in the same process
 
-Actor model in the same process:
 
-```
-$ python pinger_ponger.py
-```
+### Distributed coding
 
-### Actors distributed in the same machine
+Actors can be run concurrently in the
 
-On the first terminal, run `pinger.py`: 
-```
-$ python pinger.py
-```
+    * same process
+    * in the same machine (can take advantage of multiple CPU cores)
+    * distributed in Local Area Network
+    * distributed across networks and connected via proxies/tunnels (eg. ssh tunnel)
 
-On the second terminal, run `ponger.py`: 
-
-```
-$ python ponger.py
-```
-
-On the third terminal, run `pinger2.py`:
-
-```
-$ python pinger2.py
-```
-
-and so on... 
-
-### Actors distributed on the Local Area Network
-
-First, run above examples in a machine. On the other machine, 
-
-* open `pinger-remote.py` 
-* edit `broker_host` parameter of `ProxyActor()`
-* run `pinger-remote.py`
-* likewise, edit and run `ponger-remote.py`
-
+    see TESTS.md for more.
 
 ### Platforms
 
@@ -57,6 +31,7 @@ This library depends on `gevent >= 1.0.2` and `pyzmq >= 14.4.0` with `libzmq >= 
 
 #### Windows: 
 
+* download and install [Python 2.7.x](https://www.python.org/downloads/release/python-279/)
 * download and install http://aka.ms/vcpython27
 * `easy_install pyzmq gevent netifaces`
 
@@ -88,10 +63,7 @@ BSD License.
 ### Contact and Support
 
 A.K.T.O.S. Electronics, the Open Source Telemetry and Automation Systems company, Turkey
+
 info@aktos-elektronik.com
+
 https://aktos-elektronik.com
-
-### TODO:
-
-* Prepare documentation
-* Make a complete TODO list 
