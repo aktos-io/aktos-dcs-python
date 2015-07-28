@@ -17,6 +17,7 @@ from gevent.lock import Semaphore
 
 class ActorBase(gevent.Greenlet):
     DEBUG_NETWORK_MESSAGES = False
+    DEBUG_INNER_MESSAGES = False
 
     def __init__(self, start_on_init=True):
         self.inbox = Queue()
@@ -122,6 +123,8 @@ class Actor(ActorBase):
         """
         assert(isinstance(msg, Message))
 
+        if self.DEBUG_INNER_MESSAGES:
+            print "sending msg to manager: ", msg.cls
         msg.sender.append(self.actor_id)
         msg.debug.append("actor")
 
@@ -159,10 +162,16 @@ class ActorManager(ActorBase):
         assert(isinstance(msg, Message))
 
         for actor in self.actors:
-            #print "manager forwarding message: ", msg.sender, msg.timestamp, msg.debug
             if actor.actor_id not in msg.sender:
+                if self.DEBUG_INNER_MESSAGES:
+                    print "manager forwarding message to all actors: ", \
+                        actor.actor_id
                 msg.debug.append('manager')
                 actor.inbox.put(msg)
+            else:
+                if self.DEBUG_INNER_MESSAGES:
+                    print "manager drops short circuit message..."
+
 
     def register(self, actor_instance):
         self.actors.append(actor_instance)
