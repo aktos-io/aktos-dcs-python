@@ -341,6 +341,7 @@ class ProxyActor(Actor):
             if self.DEBUG_NETWORK_MESSAGES:
                 print "forwarding proxy message ", msg.cls, msg.msg_id
             self.broker_send(msg2)
+            self.client_send(msg2)
 
     def server_send(self, msg):
         self.add_sender_to_msg(msg)
