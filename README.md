@@ -25,7 +25,7 @@ Should work on any platform, tested on:
 
 ### Install 
 
-This library depends on `gevent >= 1.0.2` and `pyzmq >= 14.4.0` with `libzmq >= 4.0.5`.
+This library depends on `gevent >= 1.0.2` and `pyzmq >= 14.4.0` with `libzmq >= 4.0.5` and `netifaces >= 0.10.4`.
 
 
 #### Windows: 
