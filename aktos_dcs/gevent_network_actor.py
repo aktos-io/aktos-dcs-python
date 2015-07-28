@@ -209,7 +209,7 @@ class ProxyActor(Actor):
 
                     #print "full connection list: ", self.connection_list
             else:
-                #print "not connecting to itself: ", contact
+                print "not connecting to itself: ", contact
                 pass
 
     def sync_contacts(self):
@@ -337,6 +337,8 @@ class ProxyActor(Actor):
             if self.DEBUG_NETWORK_MESSAGES:
                 print "got filtered message: ", msg.msg_id
             self.send_to_inner_actors(msg2)
+            if caller == 'broker sub':
+                self.broker_send(msg2)
 
     def server_send(self, msg):
         self.add_sender_to_msg(msg)
