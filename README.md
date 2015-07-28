@@ -2,7 +2,7 @@
 
 Gevent based actor model (inspired from Erlang) used for concurrency. Messaging layer is heavily inspired from [pysage](https://github.com/realtime-system/pysage).  
 
-The goal of this library is it's simple to use and it simplifies "dynamic service discovery". See `TESTS.md` for more.
+The goal of this library is, it's simple to use and it simplifies "dynamic service discovery" problem. See `TESTS.md` for more.
 
 
 ### Distributed coding
