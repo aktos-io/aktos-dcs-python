@@ -25,7 +25,11 @@ Should work on any platform, tested on:
 
 ### Install 
 
-This library depends on `gevent >= 1.0.2` and `pyzmq >= 14.4.0` with `libzmq >= 4.0.5` and `netifaces >= 0.10.4`.
+This library depends on: 
+
+* `gevent >= 1.0.2`
+* `pyzmq >= 14.4.0` with `libzmq >= 4.0.5` 
+* `netifaces >= 0.10.4`
 
 
 #### Windows: 
@@ -44,7 +48,8 @@ This library depends on `gevent >= 1.0.2` and `pyzmq >= 14.4.0` with `libzmq >= 
 
 #### Linux:
 
-* `sudo easy_install pyzmq gevent netifaces`
+* `sudo apt-get install python-dev`
+* `sudo easy_install pyzmq gevent netifaces` (compilations take about 3-5 minutes)
 
 >Debian Wheezy notes:
 >
