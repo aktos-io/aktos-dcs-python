@@ -168,6 +168,7 @@ class ProxyActor(Actor):
 
         # add proxy brokers to contact list
         self.contacts.add_from_contact_str(self.proxy_brokers)
+        self.connect_to_contacts('client', self.contacts.contact_list)
 
         # create or watch to create address broker
         self.this_is_the_broker = False
@@ -208,7 +209,7 @@ class ProxyActor(Actor):
 
                     #print "full connection list: ", self.connection_list
             else:
-                #print "not connecting to itself: ", contact
+                print "not connecting to itself: ", contact
                 pass
 
     def sync_contacts(self):
@@ -336,6 +337,12 @@ class ProxyActor(Actor):
             if self.DEBUG_NETWORK_MESSAGES:
                 print "got filtered message: ", msg.msg_id
             self.send_to_inner_actors(msg2)
+
+            if self.DEBUG_NETWORK_MESSAGES:
+                print "forwarding proxy message ", msg.cls, msg.msg_id
+            self.broker_send(msg2)
+            self.client_send(msg2)
+            self.server_send(msg2)
 
     def server_send(self, msg):
         self.add_sender_to_msg(msg)
