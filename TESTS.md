@@ -34,5 +34,12 @@
     * run pinger.py on machine A
     * see they are started messaging again.
 
-6.
+6. inherit current contact_list
+
+    * run test#5
+    * run foo.py on machine A (without ProxyActor parameter)
+    * run bar.py on machine B (without ProxyActor parameter)
+    * see foo.py and bar.py can message eachother.
+
+
 

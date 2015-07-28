@@ -175,7 +175,9 @@ class ProxyActor(Actor):
             self.create_broker(watch=False)
         except:
             gevent.spawn(self.create_broker, watch=True)
-            # server_pub will serve on a random port
+            self.sync_contacts()
+
+
 
         gevent.sleep(2) #TODO: change this with "as soon as connected all of the others"
 
@@ -216,6 +218,7 @@ class ProxyActor(Actor):
         print "sync contacts..."  #, self.contacts.contact_list
 
         if not self.this_is_the_broker:
+            print "this is not the broker..."
             local_broker_contact = DcsContactList("localhost:%d:%d" % (self.rx_port, self.tx_port))
             self.connect_to_contacts('broker_client', local_broker_contact.contact_list)
         other_brokers = DcsContactList(self.brokers)

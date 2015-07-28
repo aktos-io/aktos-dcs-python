@@ -68,7 +68,19 @@ class ProxyActorMessage(Message):
     reply_to = ""
 
 
+class PingMessage(Message):
+    text = ""
 
+
+class PongMessage(PingMessage):
+    pass
+
+
+class FooMessage(PingMessage):
+    pass
+
+class BarMessage(FooMessage):
+    pass
 
 
 
@@ -134,12 +146,6 @@ class AlarmGenJumpToState(Message):
     state = 0
 
 
-class PingMessage(Message):
-    text = ""
-
-
-class PongMessage(PingMessage):
-    pass
 
 
 class aMessage(Message):
