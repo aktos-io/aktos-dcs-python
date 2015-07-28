@@ -22,7 +22,7 @@
 4. different machines should ping-pong.
 
     * run pinger.py on machine A
-    * edit ponger.py on machine B and give `brokers='IP_OF_MACHINE_A:5012:513'` parameter
+    * edit ponger.py on machine B and give `brokers='IP_OF_MACHINE_A:5012:5013'` parameter
     * run ponger.py on machine B
     * see they are messaging
 
@@ -34,5 +34,5 @@
     * run pinger.py on machine A
     * see they are started messaging again.
 
-
+6.
 
