@@ -89,7 +89,7 @@ class ActorBase(gevent.Greenlet):
         else:
             self.msg_history.append([msg.msg_id, msg.timestamp])
 
-            # Erase messages that will be filtered via "timeout" filter already
+            # Erase messages that will be filtered via "timeout" would filter already
             # TODO: find more efficient way to do this
             if self.msg_history:
                 if self.msg_history[0][1] + msg_timeout < time.time():
