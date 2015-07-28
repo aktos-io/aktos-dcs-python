@@ -273,6 +273,8 @@ class ProxyActor(Actor):
                     self.link.broker_client.pub.disconnect("tcp://%s:%d" % ("localhost", self.rx_port))
                     self.link.broker_client.sub.disconnect("tcp://%s:%d" % ("localhost", self.tx_port))
 
+                    self.sync_contacts()
+
                 break  # quit trying to create a broker
             except Exception as e:
                 if not watch:
