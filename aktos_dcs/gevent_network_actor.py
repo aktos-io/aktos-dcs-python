@@ -166,6 +166,9 @@ class ProxyActor(Actor):
 
         self.create_server_on_a_random_port()
 
+        # add proxy brokers to contact list
+        self.contacts.add_from_contact_str(self.proxy_brokers)
+
         # create or watch to create address broker
         self.this_is_the_broker = False
         try:
@@ -173,12 +176,6 @@ class ProxyActor(Actor):
         except:
             gevent.spawn(self.create_broker, watch=True)
             # server_pub will serve on a random port
-
-
-        # add proxy brokers to contact list
-        self.contacts.add_from_contact_str(self.proxy_brokers)
-
-        self.sync_contacts()
 
         gevent.sleep(2) #TODO: change this with "as soon as connected all of the others"
 
@@ -224,12 +221,11 @@ class ProxyActor(Actor):
         other_brokers = DcsContactList(self.brokers)
         self.connect_to_contacts('broker_client', other_brokers.contact_list)
 
-        self.contacts.add_from_contact_list(self.this_contact.contact_list)
-
         gevent.sleep(2)  # TODO: remove this sleep
 
         self.introduction_msg = ProxyActorMessage(new_contact_list=self.contacts.contact_list)
         self.broker_client_send(self.introduction_msg)
+        self.broker_send(self.introduction_msg)
 
     def handle_ProxyActorMessage(self, msg):
         print "CM delay: ", (time.time() - msg.timestamp)
