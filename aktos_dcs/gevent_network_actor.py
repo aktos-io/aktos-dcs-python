@@ -338,7 +338,8 @@ class ProxyActor(Actor):
                 print "got filtered message: ", msg.msg_id
             self.send_to_inner_actors(msg2)
 
-            print "forwarding proxy message ", msg.cls, msg.msg_id
+            if self.DEBUG_NETWORK_MESSAGES:
+                print "forwarding proxy message ", msg.cls, msg.msg_id
             self.broker_send(msg2)
 
     def server_send(self, msg):
