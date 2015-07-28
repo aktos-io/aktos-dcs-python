@@ -282,7 +282,8 @@ class ProxyActor(Actor):
             gevent.sleep()
 
     def receive(self, msg):
-        #print "receive propagating message to others...", msg
+        if self.DEBUG_NETWORK_MESSAGES:
+            print "forwarding msg to network: ", msg.msg_id
         self.server_send(msg)
         self.client_send(msg)
         self.broker_send(msg)
@@ -312,22 +313,13 @@ class ProxyActor(Actor):
         #print "broker client sub receiver started"
         while True:
             message = self.link.broker_client.sub.recv()
-            print "broker client got message"
-            #self.broker_all_receive(message, 'broker-client sub')
-            try:
-                msg = unpack(message)
-                msg = self.filter_msg(msg)
-                if type(msg) == type(ProxyActorMessage()):
-                    # handled in handle_ProxyActorMessage function
-                    gevent.spawn(self.handle_ProxyActorMessage, msg)
-            except Exception, e:
-                print "Exception occured while unpacking: ", e.message
-
+            self.broker_all_receive(message, 'broker client sub')
             gevent.sleep()
 
     def broker_all_receive(self, message, caller=''):
         if caller:
-            #print caller, " received msg..."
+            if self.DEBUG_NETWORK_MESSAGES:
+                print caller, " received msg..."
             pass
 
         try:
@@ -336,9 +328,11 @@ class ProxyActor(Actor):
             print "Exception occured while unpacking: ", e.message
             return
 
-        msg = self.filter_msg(msg)
-        if msg:
-            self.send_to_inner_actors(msg)
+        msg2 = self.filter_msg(msg)
+        if msg2:
+            if self.DEBUG_NETWORK_MESSAGES:
+                print "got filtered message: ", msg.msg_id
+            self.send_to_inner_actors(msg2)
 
     def server_send(self, msg):
         self.add_sender_to_msg(msg)
@@ -383,6 +377,8 @@ class ProxyActor(Actor):
             msg.sender.append(self.actor_id)
 
     def send_to_inner_actors(self, msg):
+        if self.DEBUG_NETWORK_MESSAGES:
+            print "forwarding msg to manager: ", msg.msg_id
         if type(msg) == type(ProxyActorMessage()):
             # handled in handle_ProxyActorMessage function
             gevent.spawn(self.handle_ProxyActorMessage, msg)
