@@ -2,46 +2,19 @@
 
 Gevent based actor model (inspired from Erlang) used for concurrency. Messaging layer is heavily inspired from [pysage](https://github.com/realtime-system/pysage).  
 
-aktos-dcs uses "addressing broker" to solve "dynamic service discovery" problem. The 'addressing broker' is created, watched for failures and recreated dynamically by alive actors. 
+The goal of this library is, it's simple to use and it simplifies "dynamic service discovery" problem. See `TESTS.md` for more.
 
-### Actors in the same process
 
-Actor model in the same process:
+### Distributed coding
 
-```
-$ python pinger_ponger.py
-```
+Actors can be run concurrently
 
-### Actors distributed in the same machine
+* in the same process
+* in the same machine (can take advantage of multiple CPU cores)
+* distributed in Local Area Network
+* distributed across networks and connected via proxies/tunnels (eg. ssh tunnel)
 
-On the first terminal, run `pinger.py`: 
-```
-$ python pinger.py
-```
-
-On the second terminal, run `ponger.py`: 
-
-```
-$ python ponger.py
-```
-
-On the third terminal, run `pinger2.py`:
-
-```
-$ python pinger2.py
-```
-
-and so on... 
-
-### Actors distributed on the Local Area Network
-
-First, run above examples in a machine. On the other machine, 
-
-* open `pinger-remote.py` 
-* edit `broker_host` parameter of `ProxyActor()`
-* run `pinger-remote.py`
-* likewise, edit and run `ponger-remote.py`
-
+see `TESTS.md` for more.
 
 ### Platforms
 
@@ -52,34 +25,35 @@ Should work on any platform, tested on:
 
 ### Install 
 
-This library depends on `gevent >= 1.0.2` and `pyzmq >= 14.4.0` with `libzmq >= 4.0.5`.
+This library depends on `gevent >= 1.0.2` and `pyzmq >= 14.4.0` with `libzmq >= 4.0.5` and `netifaces >= 0.10.4`.
 
 
 #### Windows: 
 
+* download and install [Python 2.7.x](https://www.python.org/downloads/release/python-279/)
 * download and install http://aka.ms/vcpython27
 * `easy_install pyzmq gevent netifaces`
 
-Windows 8.1 notes:
-
-You may encounter problems while installing gevent via `easy_install` on win8.1. Working solution is:
-
-* download and install http://aka.ms/vcpython27
-* `easy_install greenlet`
-* download and install `gevent` from: https://code.google.com/p/gevent/downloads/list?can=1&q=
+>Windows 8.1 notes:
+>
+>You may encounter problems while installing gevent via `easy_install` on win8.1. Working solution is:
+>
+>* download and install http://aka.ms/vcpython27
+>* `easy_install greenlet`
+>* download and install `gevent` from: https://code.google.com/p/gevent/downloads/list?can=1&q=
 
 #### Linux:
 
 * `sudo easy_install pyzmq gevent netifaces`
 
-Debian Wheezy notes: 
-
-You may encounter problems while installing libzmq 4.x on wheezy. The most stable way we found out: 
-
-* `sudo apt-get remove libzmq*`
-* download and install libzmq from source: https://github.com/zeromq/libzmq
-* `sudo apt-get remove pyzmq`
-* `sudo pip install --upgrade pyzmq`
+>Debian Wheezy notes:
+>
+>You may encounter problems while installing libzmq 4.x on wheezy. The most stable way we found out:
+>
+>* `sudo apt-get remove libzmq*`
+>* download and install libzmq from source: https://github.com/zeromq/libzmq
+>* `sudo apt-get remove pyzmq`
+>* `sudo pip install --upgrade pyzmq`
 
 ### License
 
@@ -88,10 +62,7 @@ BSD License.
 ### Contact and Support
 
 A.K.T.O.S. Electronics, the Open Source Telemetry and Automation Systems company, Turkey
+
 info@aktos-elektronik.com
+
 https://aktos-elektronik.com
-
-### TODO:
-
-* Prepare documentation
-* Make a complete TODO list 
