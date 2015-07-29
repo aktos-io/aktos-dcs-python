@@ -23,5 +23,4 @@ if __name__ == "__main__":
 
     pinger.send(PongMessage(text="startup message from pinger..."))
 
-    #ponger.send(PingMessage(text="startup message from ponger..."))
-    joinall([pinger, ponger])
+    wait_all()
