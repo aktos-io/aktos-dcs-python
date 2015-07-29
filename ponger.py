@@ -13,4 +13,4 @@ if __name__ == "__main__":
     ponger = Ponger()
     ponger.send(PingMessage(text="startup message from ponger 1..."))
 
-    ponger.join()
+    wait_all()

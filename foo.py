@@ -14,4 +14,4 @@ if __name__ == "__main__":
     foo = Foo()
     foo.send(BarMessage(text="startup message from foo from cca..."))
 
-    foo.join()
+    wait_all()

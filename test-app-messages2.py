@@ -12,4 +12,5 @@ class TestActor(Actor):
 if __name__ == "__main__":
     ProxyActor()
     test1 = TestActor()
-    test1.join()
+
+    wait_all()

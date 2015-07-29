@@ -13,4 +13,4 @@ if __name__ == "__main__":
     pinger = Pinger()
     pinger.send(PongMessage(text="startup message from pinger cca..."))
 
-    pinger.join()
+    wait_all()

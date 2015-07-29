@@ -18,4 +18,5 @@ if __name__ == "__main__":
         print "test message 1:"
         test1.send(TestMessage(text="this is test 1!"))
         sleep(3)
-    test1.join()
+
+    wait_all()

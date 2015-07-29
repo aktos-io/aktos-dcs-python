@@ -12,6 +12,9 @@ from gevent_network_actor import ProxyActor
 from gevent import sleep, joinall
 from cca_signal import CcaSignal
 
+def wait_all():
+    Actor().mgr.join()
+
 if __name__ == "__main__":
     ProxyActor()
 
