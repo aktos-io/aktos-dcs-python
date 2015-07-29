@@ -1,6 +1,15 @@
+# Tests/tutorials
+
+These tests should be performed on every merge to the master branch. These tests can be considered as a tutorial also.
+
+
+0. Change current working directory to "examples"
+
+    * cd examples
+
 1. Messages could run tests without error.
 
-    * run `python aktos_dcs/cca_messages.py`
+    * run `python test-messages.py`
     * see "all went OK" message.
 
 2. Pinger and Ponger should run in the same process without error.
