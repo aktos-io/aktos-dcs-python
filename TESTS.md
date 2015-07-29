@@ -60,7 +60,13 @@
     * run pinger.py on machine-A
     * forward broker ports (5012 and 5013) from machine-A to machine-B via SSH
 
-        machine-B:$ ssh user@machine-A -L 8012:localhost:5012 8013:localhost:5013
+        Linux:
+
+            machine-B:$ ssh user@machine-A -L 8012:localhost:5012 -L 8013:localhost:5013
+
+        Windows:
+
+            C:\> "%programfiles%\putty\plink.exe" user@machine-A -L 8012:localhost:5012 -L 8013:localhost:5013 [-i identity_file.ppk]
 
     * run ponger.py with at least `ProxyActor(proxy_brokers="localhost:8012:8013")` parameter on machine-B
     * see ping-pong occurs.
