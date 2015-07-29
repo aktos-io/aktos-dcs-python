@@ -8,9 +8,6 @@ class TestActor(Actor):
         print "received test message: ", msg
 
 if __name__ == "__main__":
-    from aktos_dcs.cca_messages import test
-    test()
-
     ProxyActor()
     test1 = TestActor()
 
