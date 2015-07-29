@@ -69,7 +69,9 @@ class ActorBase(gevent.Greenlet):
 
         a = gevent.spawn(get_message)
         b = gevent.spawn(self.action)
-        gevent.joinall([a, b])
+        #gevent.joinall([a, b])
+        while True:
+            gevent.sleep(1)
 
     def filter_msg(self, msg):
         # NOTE: THIS FUNCTION SHOULD BE CALL ONLY ONCE

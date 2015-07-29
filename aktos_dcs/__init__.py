@@ -2,18 +2,16 @@ from cca_messages import *
 try:
     from AppMessages import *
 except ImportError:
-    print "hint: "
-    print "hint: You may define App specific messages "
-    print "hint: in AppMessages.py"
-    print "hint: "
+    import info
 
-from gevent_actor import Actor
+from gevent_actor import Actor, ActorManager
 from gevent_network_actor import ProxyActor
 from gevent import sleep, joinall
 from cca_signal import CcaSignal
 
 def wait_all():
-    Actor().mgr.join()
+    while True:
+        sleep(1)
 
 if __name__ == "__main__":
     ProxyActor()
@@ -23,4 +21,5 @@ if __name__ == "__main__":
             print "got message: ", msg
 
     print "aktos_dcs init!"
-    Test().join()
+
+    wait_all()
