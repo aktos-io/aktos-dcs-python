@@ -94,8 +94,3 @@
     * run test-app-messages2.py
     * see if test-app-messages2.py receives messages
 
-
-
-
-
-
