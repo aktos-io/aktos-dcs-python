@@ -1,6 +1,6 @@
-# Tests/tutorials
+# Tests / Tutorial
 
-These tests should be performed on every merge to the master branch. These tests can be considered as a tutorial also.
+These tests should be performed on every merge to the master branch and can be considered as a tutorial.
 
 
 0. Change current working directory to "examples"
