@@ -1,5 +1,7 @@
 #Distributed Control System Library for Python
 
+`aktos_dcs` is a library for creating massively concurrent, distributed (even behind firewalls), io-bound (eg. web servers with heavy traffics) and cross-platform applications that are both vertically and horizontally scalable.
+
 Gevent based actor model (inspired from Erlang) used for concurrency. Messaging layer is heavily inspired from [pysage](https://github.com/realtime-system/pysage).  
 
 The goal of this library is, it's simple to use and it simplifies "dynamic service discovery" problem. See `TESTS.md` for more.
