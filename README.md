@@ -1,11 +1,10 @@
 #Distributed Control System Library for Python
 
-`aktos_dcs` is a library for creating massively concurrent, distributed (even behind firewalls), io-bound (eg. web servers with heavy traffics) and cross-platform applications that are both vertically and horizontally scalable.
+*aktos_dcs* is a library for creating massively concurrent, distributed (even behind firewalls), io-bound (eg. web servers with heavy traffics), vertically and horizontally scalable and cross-platform applications. 
 
 Gevent based actor model (inspired from Erlang) used for concurrency. Messaging layer is heavily inspired from [pysage](https://github.com/realtime-system/pysage).  
 
-The goal of this library is, it's simple to use and it simplifies "dynamic service discovery" problem. See `TESTS.md` for more.
-
+For a short tutorial, see `TESTS.md`. 
 
 ### Distributed coding
 
@@ -16,51 +15,28 @@ Actors can be run concurrently
 * distributed in Local Area Network
 * distributed across networks and connected via proxies/tunnels (eg. ssh tunnel)
 
-see `TESTS.md` for more.
-
 ### Platforms
 
 Should work on any platform, tested on:
 
-* Windows (XP, 8.1)
+* Windows (XP, 7, 8.1)
 * Linux (Debian, Ubuntu, Raspbian)
 
 ### Install 
 
-This library depends on: 
-
-* `gevent >= 1.0.2`
-* `pyzmq >= 14.4.0` with `libzmq >= 4.0.5` 
-* `netifaces >= 0.10.4`
-
+This library depends on `gevent 1.x`, `libzmq 4.x`, `netifaces`
 
 #### Windows: 
 
-* download and install [Python 2.7.x](https://www.python.org/downloads/release/python-279/)
-* download and install http://aka.ms/vcpython27
-* `C:\Python27\Scripts> easy_install pyzmq gevent netifaces`
-
->Windows 8.1 notes:
->
->You may encounter problems while installing gevent via `easy_install` on win8.1. Working solution is:
->
->* download and install http://aka.ms/vcpython27
->* `easy_install greenlet`
->* download and install `gevent` from: https://code.google.com/p/gevent/downloads/list?can=1&q=
+* install [Python 2.7.x](https://www.python.org/downloads/release/python-279/)
+* install http://aka.ms/vcpython27
+* `C:\Python27\Scripts>easy_install simplejson pyzmq greenlet netifaces`
+* install `gevent` from: https://code.google.com/p/gevent/downloads/detail?name=gevent-1.0b4.win32-py2.7.msi&can=1&q=
 
 #### Linux:
 
 * `$ sudo apt-get install python-dev`
-* `$ sudo easy_install pyzmq gevent netifaces` (compilations take about 3-5 minutes)
-
->Debian Wheezy notes:
->
->You may encounter problems while installing libzmq 4.x on wheezy. The most stable way we found out:
->
->* `$ sudo apt-get remove libzmq*`
->* download and install libzmq from source: https://github.com/zeromq/libzmq
->* `$ sudo apt-get remove pyzmq`
->* `$ sudo pip install --upgrade pyzmq`
+* `$ sudo easy_install simplejson pyzmq gevent netifaces` (compilations take about 3-5 minutes)
 
 ### License
 
