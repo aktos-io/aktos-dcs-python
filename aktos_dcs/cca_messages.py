@@ -1,7 +1,7 @@
 try:
     import simplejson as json
 except ImportError:
-    print "WARNING: module simplejson not found, using json insead..."
+    print "WARNING: module simplejson not found, using json instead..."
     import json
 
 
@@ -85,71 +85,12 @@ class BarMessage(FooMessage):
     pass
 
 
-# TODO: Classes defined below are belong to application. Move them!
-
-class KeypadMessage(Message):
-    edge = None
-    key = ""
-
-class IoMessage(Message):
-    edge = ""
-    pin_name = ""
-    pin_number = 0
-    curr_val = 0
-    prev_val = 0
-    last_change = -1
-    def __init__(self, **kwargs):
-        try:
-            self.pin_name = kwargs["sender"].pin_name
-        except:
-            pass
-
-        try:
-            self.pin_number = kwargs["sender"].pin_number
-        except:
-            pass
-
-        Message.__init__(self, **kwargs)
-
-class GetIoStatusMessage(IoMessage):
-    pass
-
-class IoStatusMessage(GetIoStatusMessage):
-    pass
-
-class RedLightMessage(Message):
-    mode = ""
-
-class UserInputMessage(Message):
-    screen_str = ""
-    msg_id = 0
-
-    def get_msg_group(self):
-        # get the first digit as string
-
-        group_num = str(self.msg_id)[0]
-        return int(group_num)
-
-
-class ScreenMessage(Message):
-    screen_str = ""
-
-
-class AlarmMessage(Message):
-    reason = ""
-
-
-class AlarmResetMessage(AlarmMessage):
-    pass
-
-
-class AlarmGenJumpToState(Message):
-    state = 0
-
-
-# ----------------------
+# --------------------------------
+# this import should be after
+# base message classes' definiton
+#
 from Messages import *
-# ----------------------
+# --------------------------------
 
 
 def test():
