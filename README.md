@@ -6,7 +6,7 @@ Gevent based actor model (inspired from Erlang) used for concurrency. Messaging 
 
 For a short tutorial, see `TESTS.md`. 
 
-### Distributed coding
+## Distributed coding
 
 Actors can be run concurrently
 
@@ -15,14 +15,14 @@ Actors can be run concurrently
 * distributed in Local Area Network
 * distributed across networks and connected via proxies/tunnels (eg. ssh tunnel)
 
-### Platforms
+## Platforms
 
 Should work on any platform, tested on:
 
 * Windows (XP, 7, 8.1)
 * Linux (Debian, Ubuntu, Raspbian)
 
-### Install 
+## Install 
 
 This library depends on `gevent 1.x`, `libzmq 4.x`, `netifaces`
 
@@ -38,11 +38,11 @@ This library depends on `gevent 1.x`, `libzmq 4.x`, `netifaces`
 * `$ sudo apt-get install python-dev`
 * `$ sudo easy_install simplejson pyzmq gevent netifaces` (compilations take about 3-5 minutes)
 
-### License
+## License
 
 BSD License. 
 
-### Contact and Support
+## Contact and Support
 
 A.K.T.O.S. Electronics, the Open Source Telemetry and Automation Systems company, Turkey
 
