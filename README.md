@@ -36,7 +36,7 @@ This library depends on:
 
 * download and install [Python 2.7.x](https://www.python.org/downloads/release/python-279/)
 * download and install http://aka.ms/vcpython27
-* `easy_install pyzmq gevent netifaces`
+* `C:\Python27\Scripts> easy_install pyzmq gevent netifaces`
 
 >Windows 8.1 notes:
 >
@@ -48,17 +48,17 @@ This library depends on:
 
 #### Linux:
 
-* `sudo apt-get install python-dev`
-* `sudo easy_install pyzmq gevent netifaces` (compilations take about 3-5 minutes)
+* `$ sudo apt-get install python-dev`
+* `$ sudo easy_install pyzmq gevent netifaces` (compilations take about 3-5 minutes)
 
 >Debian Wheezy notes:
 >
 >You may encounter problems while installing libzmq 4.x on wheezy. The most stable way we found out:
 >
->* `sudo apt-get remove libzmq*`
+>* `$ sudo apt-get remove libzmq*`
 >* download and install libzmq from source: https://github.com/zeromq/libzmq
->* `sudo apt-get remove pyzmq`
->* `sudo pip install --upgrade pyzmq`
+>* `$ sudo apt-get remove pyzmq`
+>* `$ sudo pip install --upgrade pyzmq`
 
 ### License
 
