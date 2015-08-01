@@ -1,8 +1,18 @@
-#Distributed Control System Library for Python
+#Python bindings for Distributed Control System Library
 
-*aktos_dcs* is a library for creating massively concurrent, distributed (even behind firewalls), io-bound (eg. web servers with heavy traffics), vertically and horizontally scalable and cross-platform applications. 
+**aktos_dcs** is a library for creating massively concurrent, distributed (even behind firewalls), io-bound (eg. heavy-traffic-web-server), vertically and horizontally scalable, cross-platform and language agnostic applications.
 
-Gevent based actor model (inspired from Erlang) used for concurrency. Messaging layer is heavily inspired from [pysage](https://github.com/realtime-system/pysage).  
+Message transport layer is built on top of ZeroMQ library, which has [Python][4], [Java][2], [Node.js][5], [C][3], [C++][6] , [C#][1] and [many other bindings][7]. This means, any number of these languages can be used together to build a single project. Developers can work with their favourite language. 
+
+[1]: https://github.com/zeromq/netmq
+[2]: https://github.com/zeromq/jzmq
+[3]: https://github.com/zeromq/czmq
+[4]: https://github.com/zeromq/pyzmq
+[5]: https://github.com/JustinTulloss/zeromq.node
+[6]: https://github.com/zeromq/cppzmq
+[7]: http://zeromq.org/bindings:_start
+
+Gevent based actor model (inspired from Erlang) used for concurrency. This means, concurrency is [nearly] for free. Since there is no real threads or subprocesses, debugging is easy. N-to-N connections are managed out of the box, so there is no single point of failure exists. 
 
 For a short tutorial, see `TESTS.md`. 
 
