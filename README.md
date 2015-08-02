@@ -41,7 +41,6 @@ This library depends on `gevent 1.x`, `libzmq 4.x`, `netifaces`
 * install [Python 2.7.x](https://www.python.org/downloads/)
 * install http://aka.ms/vcpython27
 * download and run "[windows-install-deps.cmd](https://raw.githubusercontent.com/ceremcem/aktos-dcs/master/windows-install-deps.cmd)" (right click, "save as...", download, double click on it) 
-* install `gevent` from: https://code.google.com/p/gevent/downloads/detail?name=gevent-1.0b4.win32-py2.7.msi&can=1&q=
 
 #### Linux:
 
