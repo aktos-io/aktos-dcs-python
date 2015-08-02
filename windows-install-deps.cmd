@@ -1,5 +1,7 @@
 @echo off
 C:\Python27\Scripts\easy_install simplejson pyzmq greenlet netifaces
-
-echo Press any key to continue...
+C:\Python27\Scripts\pip install gevent 
+echo
+echo All dependencies are installed...
+echo 
 pause
