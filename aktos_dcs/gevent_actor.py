@@ -132,6 +132,9 @@ class Actor(ActorBase):
         msg.debug.append("actor")
 
         self.mgr.inbox.put(msg)
+        
+        # give control to another greenlet
+        gevent.sleep()
 
 class Singleton(type):
     """
