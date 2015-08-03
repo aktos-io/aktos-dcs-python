@@ -2,6 +2,8 @@
 
 **aktos_dcs** is a library for creating massively concurrent, distributed (even behind firewalls), io-bound (eg. heavy-traffic-web-server), vertically and horizontally scalable, cross-platform and language agnostic applications.
 
+This library is developed for distributed automation projects in mind. Any PLC or motion controller related work (including HMI and SCADA) can be performed easily. Simulation of a real component of the target system becomes a trivial work to do. 
+
 Message transport layer is built on top of ZeroMQ library, which has [Python][4], [Java][2], [Node.js][5], [C][3], [C++][6] , [C#][1] and [many other bindings][7]. This means, any number of these languages can be used together to build a single project. Developers can work with their favourite language. 
 
 [1]: https://github.com/zeromq/netmq
