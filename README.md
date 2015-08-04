@@ -14,9 +14,13 @@ Message transport layer is built on top of ZeroMQ library, which has [Python][4]
 [6]: https://github.com/zeromq/cppzmq
 [7]: http://zeromq.org/bindings:_start
 
-Gevent based actor model (inspired from Erlang) is used for concurrency. This means, concurrency is [nearly] for free. Since there are no real threads or subprocesses, debugging is easy. N-to-N connections are managed out of the box, so there is no single point of failure exists. 
+Gevent based actor model (inspired from Erlang) is used for concurrency. This means, concurrency comes for free. Since there are no real threads or subprocesses, debugging is easy. N-to-N connections are managed out of the box, so there is no single point of failure exists. 
 
 For a short tutorial, see `TESTS.md`. 
+
+## Other Examples
+
+1. Serial port usage example: https://github.com/ceremcem/aktos-dcs-pyserial-example
 
 ## Distributed coding
 
