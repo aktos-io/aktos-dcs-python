@@ -1,6 +1,6 @@
 #Python bindings for Distributed Control System Library
 
-**aktos_dcs** is a library for creating massively concurrent, distributed (even behind firewalls), io-bound (eg. heavy-traffic-web-server), vertically and horizontally scalable, cross-platform and language agnostic applications.
+**aktos_dcs** is a library for creating realtime, massively concurrent, distributed (even behind firewalls), io-bound (eg. heavy-traffic-web-server), vertically and horizontally scalable, cross-platform and language agnostic applications.
 
 This library is developed for distributed automation projects in mind. Any PLC or motion controller related work (including HMI and SCADA) can be performed easily. Simulation of a real component of the target system becomes a trivial work to do. 
 
