@@ -1,8 +1,8 @@
 #Python bindings for Distributed Control System Library
 
-**aktos_dcs** is a library for creating realtime, massively concurrent, distributed (even behind firewalls), io-bound (eg. heavy-traffic-web-server), vertically and horizontally scalable, cross-platform and language agnostic applications.
+**aktos_dcs** is designed for creating **realtime**, **massively concurrent**, **distributed** (even behind firewalls), **io-bound** (eg. heavy-traffic web server), **scalable** (both vertically and horizontally), **cross-platform** and **language agnostic** applications.
 
-This library is developed for distributed automation projects in mind. Any PLC or motion controller related work (including HMI and SCADA) can be performed easily. Simulation of a real component of the target system becomes a trivial work to do. 
+This library is developed for distributed automation projects in mind. Any PLC or motion controller related work (including [HMI and SCADA](https://en.wikipedia.org/wiki/SCADA)) can be performed easily. Simulation of a real component of the target system becomes a trivial work to do. Graphical User Interface can be built by using desktop and mobile frameworks (Qt, GTK, ...) or by web technologies (HTML5, Javascript, CSS, ...). 
 
 Message transport layer is built on top of ZeroMQ library, which has [Python][4], [Java][2], [Node.js][5], [C][3], [C++][6] , [C#][1] and [many other bindings][7]. This means, any number of these languages can be used together to build a single project. Developers can work with their favourite language. 
 
