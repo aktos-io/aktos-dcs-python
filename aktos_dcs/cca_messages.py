@@ -12,20 +12,31 @@ import copy
 
 # message functions
 def message_decoder(json_string):
+    reason = ""
     try:
         j = json.loads(json_string)
-        c = globals()[j["cls"]]
+        try:
+            c = globals()[j["cls"]]
+        except:
+            reason = "Message class '%s' is not found. Define in 'AppMessages'." % j["cls"]
+            raise
+
         del(j["cls"])
         o = c(**j)
     except Exception as e:
-        reason = e.message
-        try:
-            a = pack(json_string)
-            assert a.cls == json_string.cls
-            reason = "message is not JSON string, pack first."
-        except:
-            pass
-        raise Exception("Error unpacking message: %s" % reason)
+        if not reason:
+            try:
+                a = pack(json_string)
+                assert a.cls == json_string.cls
+                reason = "message is not JSON string, pack first."
+            except:
+                pass
+
+        if not reason:
+            reason = ("unhandled error occurred, contact the author: %s"
+                      % e.message)
+
+        raise Exception("Warning: %s" % reason)
 
     return o
 

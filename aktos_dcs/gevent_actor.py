@@ -183,34 +183,5 @@ class ActorManager(ActorBase):
 
 
 if __name__ == "__main__":
-    class TestActor(Actor):
-        def receive(self, message):
-            print "TestActor.receive: ", message, id(self)
-
-        def handle_TestMessage(self, msg):
-            print "handle_TestMessage: ", msg
-
-        def handle_IoMessage(self, msg):
-            print "handle_IoMessage:", msg
-
-        def cleanup(self):
-            print "exiting and cleanup ...", self
-
-    class TestActor2(Actor):
-        def receive(self, msg):
-            print "this is test actor2", msg, id(self)
-
-    class TestMessage(Message):
-        pass
-
-    test = TestActor()
-    test11 = TestActor()
-    test2 = TestActor2()
-
-    test.inbox.put(TestMessage(deneme="bir kii"))
-    test.inbox.put(IoMessage(aaa="io message"))
-    #test.inbox.put("bu nesne Message class'ından türetilmedi")
-
-    #test.send("naber")
-
-    gevent.sleep(99999)
+    # TODO: add tests here
+    pass
