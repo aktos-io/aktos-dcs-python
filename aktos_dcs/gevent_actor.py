@@ -67,9 +67,8 @@ class ActorBase(gevent.Greenlet):
                     if callable(handler_func):
                         gevent.spawn(handler_func, msg)
 
-        a = gevent.spawn(get_message)
-        b = gevent.spawn(self.action)
-        #gevent.joinall([a, b])
+        gevent.spawn(self.action)
+        gevent.spawn(get_message)
         while True:
             gevent.sleep(1)
 
