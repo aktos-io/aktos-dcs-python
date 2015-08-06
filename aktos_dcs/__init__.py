@@ -8,10 +8,7 @@ from gevent_actor import Actor, ActorManager
 from gevent_network_actor import ProxyActor
 from gevent import sleep, joinall
 from cca_signal import CcaSignal
-
-def wait_all():
-    while True:
-        sleep(1)
+from wait_all import wait_all
 
 if __name__ == "__main__":
     ProxyActor()

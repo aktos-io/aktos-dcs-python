@@ -73,7 +73,8 @@ class DcsContactList():
         """
         for c in contact_list:
             if c not in self.contact_list:
-                print "adding contact to the contact list: ", c
+                msg = "adding to the contact list: " + display_contact(c)
+                print color.color(msg, fg_blue=True)
                 self.contact_list.append(c)
 
     def add_from_contact_str(self, contact_str):
@@ -87,6 +88,12 @@ class DcsContactList():
             for broker in broker_list:
                 ip, rx_port, tx_port = broker.split(":")
                 self.add_contact(ip_addresses=[ip], rx_port=rx_port, tx_port=tx_port)
+
+import color
+def display_contact(contact):
+    ip_list = '/'.join(contact['ip-list'])
+    r = '\t%s\t%d %d' % (ip_list, contact['ports'][0], contact['ports'][1])
+    return r
 
 
 class Link(dict):
@@ -200,9 +207,10 @@ class ProxyActor(Actor):
             if contact not in self.this_contact.contact_list:
                 for ip in contact['ip-list']:
                     conn_str = "%s:%d:%d" % (ip, contact['ports'][rx], contact['ports'][tx])
-                    print "connecting to %s\t%d\t%d via " % \
-                          (ip, contact['ports'][rx], contact['ports'][tx]), \
-                        link_name
+                    print_msg = ("%s\t%d %d\tvia %s" %
+                          (ip, contact['ports'][rx], contact['ports'][tx], link_name))
+                    print_msg = color.color(print_msg, fg_light_green=True)
+                    print color.color("connecting to\t", fg_green=True) + print_msg
                     rx_addr = "tcp://%s:%d" % (ip, contact['ports'][rx])
                     tx_addr = "tcp://%s:%d" % (ip, contact['ports'][tx])
                     self.link[link_name].pub.connect(rx_addr)
@@ -211,7 +219,8 @@ class ProxyActor(Actor):
 
                     #print "full connection list: ", self.connection_list
             else:
-                print "not connecting to itself: ", contact
+                m = "not connecting to itself: " + display_contact(contact)
+                print color.color(m, fg_orange=True)
                 pass
 
     def sync_contacts(self):
@@ -237,7 +246,7 @@ class ProxyActor(Actor):
         print "CM delay: ", (time.time() - msg.timestamp)
         if msg.new_contact_list:
             print "got new contact list, merging and redistributing..."
-            pprint(msg)
+            #pprint(msg)
             self.contacts.add_from_contact_list(msg.new_contact_list)
             #pdb.set_trace()
             self.broker_all_send(ProxyActorMessage(
