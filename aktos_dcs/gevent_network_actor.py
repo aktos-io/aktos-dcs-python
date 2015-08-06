@@ -331,7 +331,7 @@ class ProxyActor(Actor):
         try:
             msg = unpack(message)
         except Exception, e:
-            print "Exception occured while unpacking: ", e.message
+            print e.message
             return
 
         msg2 = self.filter_msg(msg)
