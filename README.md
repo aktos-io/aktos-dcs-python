@@ -1,11 +1,28 @@
-#Distributed Control System Library for Python
+#Python bindings for Distributed Control System Library
 
-Gevent based actor model (inspired from Erlang) used for concurrency. Messaging layer is heavily inspired from [pysage](https://github.com/realtime-system/pysage).  
+**aktos_dcs** is designed for creating **realtime**, **massively concurrent**, **distributed** (even behind firewalls), **io-bound** (eg. heavy-traffic web server), **scalable** (both vertically and horizontally), **cross-platform** and **language agnostic** applications.
 
-The goal of this library is, it's simple to use and it simplifies "dynamic service discovery" problem. See `TESTS.md` for more.
+This library is developed for distributed automation projects in mind. Any PLC or motion controller related work (including [HMI and SCADA](https://en.wikipedia.org/wiki/SCADA)) can be performed easily. Simulation of a real component of the target system becomes a trivial work to do. Graphical User Interface can be built by using desktop and mobile frameworks (Qt, GTK, ...) or by web technologies (HTML5, Javascript, CSS, ...). 
 
+Message transport layer is built on top of ZeroMQ library, which has [Python][4], [Java][2], [Node.js][5], [C][3], [C++][6] , [C#][1] and [many other bindings][7]. This means, any number of these languages can be used together to build a single project. Developers can work with their favourite language. 
 
-### Distributed coding
+[1]: https://github.com/zeromq/netmq
+[2]: https://github.com/zeromq/jzmq
+[3]: https://github.com/zeromq/czmq
+[4]: https://github.com/zeromq/pyzmq
+[5]: https://github.com/JustinTulloss/zeromq.node
+[6]: https://github.com/zeromq/cppzmq
+[7]: http://zeromq.org/bindings:_start
+
+Gevent based actor model (inspired from Erlang) is used for concurrency. This means, concurrency comes for free. Since there are no real threads or subprocesses, debugging is easy. N-to-N connections are managed out of the box, so there is no single point of failure exists. 
+
+For a short tutorial, see `TESTS.md`. 
+
+## Other Examples
+
+1. Serial port usage example: https://github.com/ceremcem/aktos-dcs-pyserial-example
+
+## Distributed coding
 
 Actors can be run concurrently
 
@@ -14,57 +31,33 @@ Actors can be run concurrently
 * distributed in Local Area Network
 * distributed across networks and connected via proxies/tunnels (eg. ssh tunnel)
 
-see `TESTS.md` for more.
-
-### Platforms
+## Platforms
 
 Should work on any platform, tested on:
 
-* Windows (XP, 8.1)
+* Windows (XP, 7, 8.1)
 * Linux (Debian, Ubuntu, Raspbian)
 
-### Install 
+## Install 
 
-This library depends on: 
-
-* `gevent >= 1.0.2`
-* `pyzmq >= 14.4.0` with `libzmq >= 4.0.5` 
-* `netifaces >= 0.10.4`
-
+This library depends on `gevent 1.x`, `libzmq 4.x`, `netifaces`
 
 #### Windows: 
 
-* download and install [Python 2.7.x](https://www.python.org/downloads/release/python-279/)
-* download and install http://aka.ms/vcpython27
-* `easy_install pyzmq gevent netifaces`
-
->Windows 8.1 notes:
->
->You may encounter problems while installing gevent via `easy_install` on win8.1. Working solution is:
->
->* download and install http://aka.ms/vcpython27
->* `easy_install greenlet`
->* download and install `gevent` from: https://code.google.com/p/gevent/downloads/list?can=1&q=
+* install [Python 2.7.x](https://www.python.org/downloads/)
+* install http://aka.ms/vcpython27
+* download and run "[windows-install-deps.cmd](https://raw.githubusercontent.com/ceremcem/aktos-dcs/master/windows-install-deps.cmd)" (right click, "save as...", download, double click on it) 
 
 #### Linux:
 
-* `sudo apt-get install python-dev`
-* `sudo easy_install pyzmq gevent netifaces` (compilations take about 3-5 minutes)
+* `$ sudo apt-get install python-dev`
+* `$ sudo easy_install simplejson pyzmq gevent netifaces` (compilations take about 3-5 minutes)
 
->Debian Wheezy notes:
->
->You may encounter problems while installing libzmq 4.x on wheezy. The most stable way we found out:
->
->* `sudo apt-get remove libzmq*`
->* download and install libzmq from source: https://github.com/zeromq/libzmq
->* `sudo apt-get remove pyzmq`
->* `sudo pip install --upgrade pyzmq`
-
-### License
+## License
 
 BSD License. 
 
-### Contact and Support
+## Contact and Support
 
 A.K.T.O.S. Electronics, the Open Source Telemetry and Automation Systems company, Turkey
 
