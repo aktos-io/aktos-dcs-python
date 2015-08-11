@@ -7,7 +7,7 @@ from gevent.queue import Queue
 import atexit
 import traceback
 from pprint import pprint
-
+from wait_all import wait_all
 from Messages import *
 
 import uuid
@@ -23,13 +23,19 @@ class ActorBase(gevent.Greenlet):
     def __init__(self, start_on_init=True):
         self.inbox = Queue()
         gevent.Greenlet.__init__(self)
-        self.actor_id = str(uuid.uuid4())
+        self.actor_id = uuid.uuid4().hex
+        self.msg_serial = 0
         if start_on_init:
             self.start()
         self.msg_history = []
 
         self.sem = Semaphore()
         atexit.register(self.cleanup)
+        
+    def get_msg_id(self):
+        msg_id = self.actor_id + str(self.msg_serial)
+        self.msg_serial += 1
+        return msg_id
 
     def receive(self, msg):
         """
@@ -55,22 +61,19 @@ class ActorBase(gevent.Greenlet):
         def get_message():
             while self.running:
                 msg = self.inbox.get()
-                #msg = self.filter_msg(msg)
-                if msg:
-                    gevent.spawn(self.receive, msg)
-                    #print("message handler spawned!!")
-
-                    # pass the XYZMessage to "handle_XYZMessage()"
-                    # function if such a function exists:
-                    handler_func_name = "handle_" + msg.__class__.__name__
+                #gevent.spawn(self.receive, msg)
+                self.receive(msg)
+                for subject in msg['payload'].keys():
+                    handler_func_name = "handle_" + subject
                     handler_func = getattr(self, handler_func_name, None)
                     if callable(handler_func):
-                        gevent.spawn(handler_func, msg)
+                        #gevent.spawn(handler_func, msg)
+                        handler_func(msg['payload'][subject])
 
         gevent.spawn(self.action)
         gevent.spawn(get_message)
         while True:
-            gevent.sleep(1)
+            gevent.sleep(99999)
 
     def filter_msg(self, msg):
         # NOTE: THIS FUNCTION SHOULD BE CALL ONLY ONCE
@@ -82,19 +85,19 @@ class ActorBase(gevent.Greenlet):
             gevent.sleep()
         msg_filtered = None
         msg_timeout = 5
-        if self.actor_id in msg.sender:
+        if self.actor_id in msg['sender']:
             if self.DEBUG_NETWORK_MESSAGES:
-                print "dropping short circuit message...", msg.msg_id
+                print "dropping short circuit message...", msg['msg_id']
             #pprint(self.msg_history)
             pass
-        elif msg.msg_id in [i[0] for i in self.msg_history]:
+        elif msg['msg_id'] in [i[0] for i in self.msg_history]:
             if self.DEBUG_NETWORK_MESSAGES:
-                print "dropping duplicate message...", msg.msg_id
+                print "dropping duplicate message...", msg['msg_id']
             pass
-        elif msg.timestamp + msg_timeout < time.time():
-            print "dropping timeouted message (%d secs. old)" % (time.time() - msg.timestamp)
+        elif msg['timestamp'] + msg_timeout < time.time():
+            print "dropping timeouted message (%d secs. old)" % (time.time() - msg['timestamp'])
         else:
-            self.msg_history.append(list([msg.msg_id, msg.timestamp, msg.debug]))
+            self.msg_history.append(list([msg['msg_id'], msg['timestamp']]))
             msg_filtered = msg
 
             # Erase messages that will be filtered via "timeout" filter already
@@ -104,7 +107,7 @@ class ActorBase(gevent.Greenlet):
                     del self.msg_history[0]
 
             if self.DEBUG_NETWORK_MESSAGES:
-                print "passed filter: ", msg.msg_id
+                print "passed filter: ", msg['msg_id']
 
         if self.DEBUG_NETWORK_MESSAGES:
             print "filter process done..."
@@ -123,12 +126,12 @@ class Actor(ActorBase):
         """
         send message to the actor manager
         """
-        assert(isinstance(msg, Message))
+        #assert(isinstance(msg, Message))
 
+        msg = envelp(msg, self.get_msg_id())
+        msg['sender'].append(self.actor_id)
         if self.DEBUG_INNER_MESSAGES:
-            print "sending msg to manager: ", msg.cls
-        msg.sender.append(self.actor_id)
-        msg.debug.append("actor")
+            print "sending msg to manager: ", msg
 
         self.mgr.inbox.put(msg)
         
@@ -164,14 +167,13 @@ class ActorManager(ActorBase):
         self.actors = []
 
     def receive(self, msg):
-        assert(isinstance(msg, Message))
+        #assert(isinstance(msg, Message))
 
         for actor in self.actors:
-            if actor.actor_id not in msg.sender:
+            if actor.actor_id not in msg['sender']:
                 if self.DEBUG_INNER_MESSAGES:
                     print "manager forwarding message to all actors: ", \
                         actor.actor_id
-                msg.debug.append('manager')
                 actor.inbox.put(msg)
             else:
                 if self.DEBUG_INNER_MESSAGES:
@@ -184,4 +186,19 @@ class ActorManager(ActorBase):
 
 if __name__ == "__main__":
     # TODO: add tests here
-    pass
+    class TestActor(Actor):
+        def handle_IoMessage(self, msg):
+            if msg['pin-name'] == 'hello':
+                print "got message from pin named 'hello':", msg
+
+    class TestActor2(Actor):
+        def action(self):
+            val = 0
+            while True:
+                val += 1
+                self.send({'IoMessage': {'pin-name': 'hello', 'val': val}})
+                gevent.sleep(0.001)
+
+    TestActor()
+    TestActor2()
+    wait_all()

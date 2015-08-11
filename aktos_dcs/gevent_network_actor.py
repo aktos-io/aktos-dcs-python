@@ -357,35 +357,35 @@ class ProxyActor(Actor):
 
     def server_send(self, msg):
         self.add_sender_to_msg(msg)
-        msg2 = unpack(pack(msg))
-        msg2.debug.append("server-send")
+        #msg2 = unpack(pack(msg))
+        #msg2.debug.append("server-send")
         #print "server_send..."
-        message = pack(msg2)
+        message = pack(msg)
         self.link.server.pub.send(message)
 
     def client_send(self, msg):
         self.add_sender_to_msg(msg)
-        msg2 = unpack(pack(msg))
-        msg2.debug.append("client-send")
+        #msg2 = unpack(pack(msg))
+        #msg2.debug.append("client-send")
         #print "client_send..."
-        message = pack(msg2)
+        message = pack(msg)
         self.link.client.pub.send(message)
 
     def broker_send(self, msg):
         if self.this_is_the_broker:
             #pdb.set_trace()
             self.add_sender_to_msg(msg)
-            msg2 = unpack(pack(msg))
-            msg2.debug.append("broker-send")
+            #msg2 = unpack(pack(msg))
+            #msg2.debug.append("broker-send")
             #print "broker_send..."
-            message = pack(msg2)
+            message = pack(msg)
             self.link.broker.pub.send(message)
 
     def broker_client_send(self, msg):
         self.add_sender_to_msg(msg)
-        msg2 = unpack(pack(msg))
-        msg2.debug.append("broker-client-send")
-        message = pack(msg2)
+        #msg2 = unpack(pack(msg))
+        #msg2.debug.append("broker-client-send")
+        message = pack(msg)
         #print "broker_client_send..."
         self.link.broker_client.pub.send(message)
 

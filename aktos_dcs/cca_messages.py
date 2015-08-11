@@ -9,44 +9,23 @@ except ImportError:
 import time
 import uuid
 import copy
-
+import msgpack
 # message functions
-def message_decoder(json_string):
-    reason = ""
-    try:
-        j = json.loads(json_string)
-        try:
-            c = globals()[j["cls"]]
-        except:
-            reason = "Message class '%s' is not found. Define in 'AppMessages'." % j["cls"]
-            raise
-
-        del(j["cls"])
-        o = c(**j)
-    except Exception as e:
-        if not reason:
-            try:
-                a = pack(json_string)
-                assert a.cls == json_string.cls
-                reason = "message is not JSON string, pack first."
-            except:
-                pass
-
-        if not reason:
-            reason = ("unhandled error occurred, contact the author: %s"
-                      % e.message)
-
-        raise Exception("Warning: %s" % reason)
-
-    return o
-
-def unpack(json_string):
-    return message_decoder(json_string)
+def unpack(message):
+    return msgpack.unpackb(message)
 
 def pack(msg):
-    assert(isinstance(msg, Message))
-    return json.dumps(dict(msg))
+    #assert(isinstance(msg, Message)) # this does not consume cpu
+    return msgpack.packb(msg)
 
+
+def envelp(message, msg_id):
+    return {
+        'sender': [],
+        'timestamp': time.time(),
+        'msg_id': msg_id, # {{.actor_id}}.{{serial}}
+        'payload': message,
+    }
 
 class Message(dict):
 
@@ -67,7 +46,7 @@ class Message(dict):
         self.__dict__ = self
 
         self.timestamp = time.time()
-        self.msg_id = str(uuid.uuid4())
+        #self.msg_id = str(uuid.uuid4())
         self.cls = self.__class__.__name__
 
         # this should be the last one

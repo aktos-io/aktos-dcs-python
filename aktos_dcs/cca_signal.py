@@ -5,6 +5,13 @@ import gevent
 import gevent.queue
 import time
 
+from gevent_actor import Singleton
+
+class CcaSignalLoop(object):
+    __metaclass__ = Singleton
+
+
+
 class CcaSignal(object):
     """
     for rising edge and falling edge;
