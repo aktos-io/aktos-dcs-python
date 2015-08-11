@@ -41,7 +41,7 @@ class ActorBase(gevent.Greenlet):
                 self.handle_functions[f[0]] = f[1]
         
     def get_msg_id(self):
-        msg_id = self.actor_id + str(self.msg_serial)
+        msg_id = '.'.join([self.actor_id, str(self.msg_serial)])
         self.msg_serial += 1
         return msg_id
 

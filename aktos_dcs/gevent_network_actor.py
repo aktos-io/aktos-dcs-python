@@ -165,10 +165,11 @@ class ProxyActor(Actor):
         for l in dict(self.link).values():
             l.sub = self.context.socket(zmq.SUB)
             l.sub.setsockopt(zmq.SUBSCRIBE, '')
+            l.sub.setsockopt(zmq.RCVHWM, 0)
 
             l.pub = self.context.socket(zmq.PUB)
             l.pub.setsockopt(zmq.LINGER, 0)
-            l.pub.setsockopt(zmq.SNDHWM, 2)
+            l.pub.setsockopt(zmq.SNDHWM, 0)
             l.pub.setsockopt(zmq.SNDTIMEO, 0)
 
             gevent.spawn(l.receiver)
@@ -305,6 +306,7 @@ class ProxyActor(Actor):
         self.server_send(msg)
         self.client_send(msg)
         self.broker_send(msg)
+        #self.broker_client_send(msg)
 
     def server_sub_receiver(self):
         #print "server sub receiver started"
@@ -411,7 +413,7 @@ class ProxyActor(Actor):
         # (CAN NOT BE CHAINED IN FUNCTIONS). ELSE,
         # ERRONEOUS DUPLICATE MESSAGE EVENT WILL OCCUR
         try:
-            #self.sem.acquire()
+            self.sem.acquire()
             if self.DEBUG_NETWORK_MESSAGES:
                 print "filter process started...", msg
                 gevent.sleep()
@@ -438,13 +440,15 @@ class ProxyActor(Actor):
                     if self.msg_history[0][1] + msg_timeout < time.time():
                         del self.msg_history[0]
 
+                #self.msg_history = [i for i in self.msg_history if i[1] + msg_timeout > time.time()]
+
                 if self.DEBUG_NETWORK_MESSAGES:
                     print "passed filter: ", msg['msg_id']
 
             if self.DEBUG_NETWORK_MESSAGES:
                 print "filter process done..."
 
-            #self.sem.release()
+            self.sem.release()
             return msg_filtered
         except Exception as e:
             print "DEBUG: unknown message: ", e.message, msg

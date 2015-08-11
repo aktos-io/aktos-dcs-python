@@ -7,7 +7,7 @@ except ImportError:
 from gevent_actor import Actor, ActorManager
 from gevent_network_actor import ProxyActor
 from gevent import sleep, joinall
-from cca_signal import CcaSignal
+from cca_signal import CcaSignal, CcaSignalLoop
 from wait_all import wait_all
 
 if __name__ == "__main__":
