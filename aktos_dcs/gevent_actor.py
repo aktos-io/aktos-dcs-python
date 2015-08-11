@@ -80,41 +80,45 @@ class ActorBase(gevent.Greenlet):
         # NOTE: THIS FUNCTION SHOULD BE CALL ONLY ONCE
         # (CAN NOT BE CHAINED IN FUNCTIONS). ELSE,
         # ERRONEOUS DUPLICATE MESSAGE EVENT WILL OCCUR
-        self.sem.acquire()
-        if self.DEBUG_NETWORK_MESSAGES:
-            print "filter process started...", msg
-            gevent.sleep()
-        msg_filtered = None
-        msg_timeout = 5
-        if self.actor_id in msg['sender']:
+        try:
+            self.sem.acquire()
             if self.DEBUG_NETWORK_MESSAGES:
-                print "dropping short circuit message...", msg['msg_id']
-            #pprint(self.msg_history)
-            pass
-        elif msg['msg_id'] in [i[0] for i in self.msg_history]:
+                print "filter process started...", msg
+                gevent.sleep()
+            msg_filtered = None
+            msg_timeout = 5
+            if self.actor_id in msg['sender']:
+                if self.DEBUG_NETWORK_MESSAGES:
+                    print "dropping short circuit message...", msg['msg_id']
+                #pprint(self.msg_history)
+                pass
+            elif msg['msg_id'] in [i[0] for i in self.msg_history]:
+                if self.DEBUG_NETWORK_MESSAGES:
+                    print "dropping duplicate message...", msg['msg_id']
+                pass
+            elif msg['timestamp'] + msg_timeout < time.time():
+                print "dropping timeouted message (%d secs. old)" % (time.time() - msg['timestamp'])
+            else:
+                self.msg_history.append(list([msg['msg_id'], msg['timestamp']]))
+                msg_filtered = msg
+
+                # Erase messages that will be filtered via "timeout" filter already
+                # TODO: find more efficient way to do this
+                if self.msg_history:
+                    if self.msg_history[0][1] + msg_timeout < time.time():
+                        del self.msg_history[0]
+
+                if self.DEBUG_NETWORK_MESSAGES:
+                    print "passed filter: ", msg['msg_id']
+
             if self.DEBUG_NETWORK_MESSAGES:
-                print "dropping duplicate message...", msg['msg_id']
-            pass
-        elif msg['timestamp'] + msg_timeout < time.time():
-            print "dropping timeouted message (%d secs. old)" % (time.time() - msg['timestamp'])
-        else:
-            self.msg_history.append(list([msg['msg_id'], msg['timestamp']]))
-            msg_filtered = msg
+                print "filter process done..."
 
-            # Erase messages that will be filtered via "timeout" filter already
-            # TODO: find more efficient way to do this
-            if self.msg_history:
-                if self.msg_history[0][1] + msg_timeout < time.time():
-                    del self.msg_history[0]
-
-            if self.DEBUG_NETWORK_MESSAGES:
-                print "passed filter: ", msg['msg_id']
-
-        if self.DEBUG_NETWORK_MESSAGES:
-            print "filter process done..."
-
-        self.sem.release()
-        return msg_filtered
+            self.sem.release()
+            return msg_filtered
+        except Exception as e:
+            print "DEBUG: unknown message: ", e.message, msg
+            return None
 
 class Actor(ActorBase):
 
