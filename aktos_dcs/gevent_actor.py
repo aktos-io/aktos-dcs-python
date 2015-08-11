@@ -9,6 +9,7 @@ import traceback
 from pprint import pprint
 from wait_all import wait_all
 from Messages import *
+import inspect
 
 import uuid
 
@@ -31,6 +32,13 @@ class ActorBase(gevent.Greenlet):
 
         self.sem = Semaphore()
         atexit.register(self.cleanup)
+
+        functions = inspect.getmembers(self, predicate=inspect.ismethod)
+        self.handle_functions = {}
+        for f in functions:
+            if f[0].startswith("handle_"):
+                #print "this is handle funct: ", f
+                self.handle_functions[f[0]] = f[1]
         
     def get_msg_id(self):
         msg_id = self.actor_id + str(self.msg_serial)
@@ -62,63 +70,20 @@ class ActorBase(gevent.Greenlet):
             while self.running:
                 msg = self.inbox.get()
 
-                for subject in msg['payload'].keys():
-                    handler_func_name = "handle_" + subject
-                    handler_func = getattr(self, handler_func_name, None)
-                    if callable(handler_func):
-                        #gevent.spawn(handler_func, msg)
-                        handler_func(msg)
-                    self.receive(msg)
+                for subject in msg['payload']:
+                    #self.handle_functions.get("handle_" + subject, self.receive)(msg)
 
+                    handler = self.handle_functions.get("handle_" + subject, self.receive)
+                    #handler(msg)
+                    gevent.spawn(handler, msg)
+
+                gevent.sleep(0)
 
         gevent.spawn(self.action)
         gevent.spawn(get_message)
         while True:
             gevent.sleep(99999)
 
-    def filter_msg(self, msg):
-        # NOTE: THIS FUNCTION SHOULD BE CALL ONLY ONCE
-        # (CAN NOT BE CHAINED IN FUNCTIONS). ELSE,
-        # ERRONEOUS DUPLICATE MESSAGE EVENT WILL OCCUR
-        try:
-            self.sem.acquire()
-            if self.DEBUG_NETWORK_MESSAGES:
-                print "filter process started...", msg
-                gevent.sleep()
-            msg_filtered = None
-            msg_timeout = 5
-            if self.actor_id in msg['sender']:
-                if self.DEBUG_NETWORK_MESSAGES:
-                    print "dropping short circuit message...", msg['msg_id']
-                #pprint(self.msg_history)
-                pass
-            elif msg['msg_id'] in [i[0] for i in self.msg_history]:
-                if self.DEBUG_NETWORK_MESSAGES:
-                    print "dropping duplicate message...", msg['msg_id']
-                pass
-            elif msg['timestamp'] + msg_timeout < time.time():
-                print "dropping timeouted message (%d secs. old)" % (time.time() - msg['timestamp'])
-            else:
-                self.msg_history.append(list([msg['msg_id'], msg['timestamp']]))
-                msg_filtered = msg
-
-                # Erase messages that will be filtered via "timeout" filter already
-                # TODO: find more efficient way to do this
-                if self.msg_history:
-                    if self.msg_history[0][1] + msg_timeout < time.time():
-                        del self.msg_history[0]
-
-                if self.DEBUG_NETWORK_MESSAGES:
-                    print "passed filter: ", msg['msg_id']
-
-            if self.DEBUG_NETWORK_MESSAGES:
-                print "filter process done..."
-
-            self.sem.release()
-            return msg_filtered
-        except Exception as e:
-            print "DEBUG: unknown message: ", e.message, msg
-            return None
 
 class Actor(ActorBase):
 

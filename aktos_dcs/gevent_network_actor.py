@@ -247,7 +247,7 @@ class ProxyActor(Actor):
     def handle_ProxyActorMessage(self, msg_raw):
         msg = msg_body(msg_raw)
         print "CM delay: ", (time.time() - msg_raw['timestamp'])
-        if 'new_contact_list' in msg.keys():
+        if 'new_contact_list' in msg:
             print "got new contact list, merging and redistributing..."
             #pprint(msg)
             self.contacts.add_from_contact_list(msg['new_contact_list'])
@@ -255,7 +255,7 @@ class ProxyActor(Actor):
             self.broker_all_send(envelp({'ProxyActorMessage':
                 {'contact_list': self.contacts.contact_list,
                 'reply_to': msg_raw['msg_id']}}, self.get_msg_id()))
-        elif 'contact_list' in msg.keys():
+        elif 'contact_list' in msg:
             print "got full contact list, updating own list... "
             self.contacts.add_from_contact_list(msg['contact_list'])
             if msg['reply_to'] == self.introduction_msg['msg_id']:
@@ -399,12 +399,57 @@ class ProxyActor(Actor):
     def send_to_inner_actors(self, msg_raw):
         if self.DEBUG_NETWORK_MESSAGES:
             print "forwarding msg to manager: ", msg_raw['msg_id']
-        if 'ProxyActorMessage' in msg_raw['payload'].keys():
+        if 'ProxyActorMessage' in msg_raw['payload']:
             # handled in handle_ProxyActorMessage function
             gevent.spawn(self.handle_ProxyActorMessage, msg_raw)
         else:
             self.add_sender_to_msg(msg_raw)
             self.mgr.inbox.put(msg_raw)
+
+    def filter_msg(self, msg):
+        # NOTE: THIS FUNCTION SHOULD BE CALL ONLY ONCE
+        # (CAN NOT BE CHAINED IN FUNCTIONS). ELSE,
+        # ERRONEOUS DUPLICATE MESSAGE EVENT WILL OCCUR
+        try:
+            #self.sem.acquire()
+            if self.DEBUG_NETWORK_MESSAGES:
+                print "filter process started...", msg
+                gevent.sleep()
+            msg_filtered = None
+            msg_timeout = 5
+            if self.actor_id in msg['sender']:
+                if self.DEBUG_NETWORK_MESSAGES:
+                    print "dropping short circuit message...", msg['msg_id']
+                #pprint(self.msg_history)
+                pass
+            elif msg['msg_id'] in [i[0] for i in self.msg_history]:
+                if self.DEBUG_NETWORK_MESSAGES:
+                    print "dropping duplicate message...", msg['msg_id']
+                pass
+            elif msg['timestamp'] + msg_timeout < time.time():
+                print "dropping timeouted message (%d secs. old)" % (time.time() - msg['timestamp'])
+            else:
+                self.msg_history.append(list([msg['msg_id'], msg['timestamp']]))
+                msg_filtered = msg
+
+                # Erase messages that will be filtered via "timeout" filter already
+                # TODO: find more efficient way to do this
+                if self.msg_history:
+                    if self.msg_history[0][1] + msg_timeout < time.time():
+                        del self.msg_history[0]
+
+                if self.DEBUG_NETWORK_MESSAGES:
+                    print "passed filter: ", msg['msg_id']
+
+            if self.DEBUG_NETWORK_MESSAGES:
+                print "filter process done..."
+
+            #self.sem.release()
+            return msg_filtered
+        except Exception as e:
+            print "DEBUG: unknown message: ", e.message, msg
+            return None
+
 
     def cleanup(self):
         print "cleanup..."
