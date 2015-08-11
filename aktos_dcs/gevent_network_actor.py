@@ -238,26 +238,29 @@ class ProxyActor(Actor):
 
         gevent.sleep(2)  # TODO: remove this sleep
 
-        self.introduction_msg = ProxyActorMessage(new_contact_list=self.contacts.contact_list)
+        self.introduction_msg = envelp(
+            {'ProxyActorMessage': {'new_contact_list': self.contacts.contact_list}},
+            self.get_msg_id())
         self.broker_client_send(self.introduction_msg)
         self.broker_send(self.introduction_msg)
 
-    def handle_ProxyActorMessage(self, msg):
-        print "CM delay: ", (time.time() - msg.timestamp)
-        if msg.new_contact_list:
+    def handle_ProxyActorMessage(self, msg_raw):
+        msg = msg_body(msg_raw)
+        print "CM delay: ", (time.time() - msg_raw['timestamp'])
+        if 'new_contact_list' in msg.keys():
             print "got new contact list, merging and redistributing..."
             #pprint(msg)
-            self.contacts.add_from_contact_list(msg.new_contact_list)
+            self.contacts.add_from_contact_list(msg['new_contact_list'])
             #pdb.set_trace()
-            self.broker_all_send(ProxyActorMessage(
-                contact_list=self.contacts.contact_list,
-                reply_to=msg.msg_id))
-        elif msg.contact_list:
+            self.broker_all_send(envelp({'ProxyActorMessage':
+                {'contact_list': self.contacts.contact_list,
+                'reply_to': msg_raw['msg_id']}}, self.get_msg_id()))
+        elif 'contact_list' in msg.keys():
             print "got full contact list, updating own list... "
-            self.contacts.add_from_contact_list(msg.contact_list)
-            if msg.reply_to == self.introduction_msg.msg_id:
+            self.contacts.add_from_contact_list(msg['contact_list'])
+            if msg['reply_to'] == self.introduction_msg['msg_id']:
                 print "connecting whole contact list..."
-                self.connect_to_contacts('client', contact_list=msg.contact_list)
+                self.connect_to_contacts('client', contact_list=msg['contact_list'])
         else:
             print "WARNING: UNHANDLED CONTROL MESSAGE: ", msg
 
@@ -298,7 +301,7 @@ class ProxyActor(Actor):
 
     def receive(self, msg):
         if self.DEBUG_NETWORK_MESSAGES:
-            print "forwarding msg to network: ", msg.msg_id
+            print "forwarding msg to network: ", msg['msg_id']
         self.server_send(msg)
         self.client_send(msg)
         self.broker_send(msg)
@@ -337,75 +340,71 @@ class ProxyActor(Actor):
                 print caller, " received msg..."
             pass
 
-        try:
-            msg = unpack(message)
-        except Exception, e:
-            print e.message
-            return
+        msg_r = unpack(message)
 
-        msg2 = self.filter_msg(msg)
-        if msg2:
+        msg_r = self.filter_msg(msg_r)
+        if msg_r:
             if self.DEBUG_NETWORK_MESSAGES:
-                print "got filtered message: ", msg.msg_id
-            self.send_to_inner_actors(msg2)
+                print "got filtered message: ", msg_r['msg_id']
+            self.send_to_inner_actors(msg_r)
 
             if self.DEBUG_NETWORK_MESSAGES:
-                print "forwarding proxy message ", msg.cls, msg.msg_id
-            self.broker_send(msg2)
-            self.client_send(msg2)
-            self.server_send(msg2)
+                print "forwarding proxy message ", msg_r['payload'].keys()[0], msg_r['msg_id']
+            self.broker_send(msg_r)
+            self.client_send(msg_r)
+            self.server_send(msg_r)
 
-    def server_send(self, msg):
-        self.add_sender_to_msg(msg)
+    def server_send(self, msg_raw):
+        self.add_sender_to_msg(msg_raw)
         #msg2 = unpack(pack(msg))
         #msg2.debug.append("server-send")
         #print "server_send..."
-        message = pack(msg)
+        message = pack(msg_raw)
         self.link.server.pub.send(message)
 
-    def client_send(self, msg):
-        self.add_sender_to_msg(msg)
+    def client_send(self, msg_raw):
+        self.add_sender_to_msg(msg_raw)
         #msg2 = unpack(pack(msg))
         #msg2.debug.append("client-send")
         #print "client_send..."
-        message = pack(msg)
+        message = pack(msg_raw)
         self.link.client.pub.send(message)
 
-    def broker_send(self, msg):
+    def broker_send(self, msg_raw):
         if self.this_is_the_broker:
             #pdb.set_trace()
-            self.add_sender_to_msg(msg)
+            self.add_sender_to_msg(msg_raw)
             #msg2 = unpack(pack(msg))
             #msg2.debug.append("broker-send")
             #print "broker_send..."
-            message = pack(msg)
+            message = pack(msg_raw)
             self.link.broker.pub.send(message)
 
-    def broker_client_send(self, msg):
-        self.add_sender_to_msg(msg)
+    def broker_client_send(self, msg_raw):
+        self.add_sender_to_msg(msg_raw)
         #msg2 = unpack(pack(msg))
         #msg2.debug.append("broker-client-send")
-        message = pack(msg)
+        message = pack(msg_raw)
         #print "broker_client_send..."
         self.link.broker_client.pub.send(message)
 
-    def broker_all_send(self, msg):
-        self.broker_send(msg)
-        self.broker_client_send(msg)
+    def broker_all_send(self, msg_raw):
+        self.broker_send(msg_raw)
+        self.broker_client_send(msg_raw)
 
-    def add_sender_to_msg(self, msg):
-        if self.actor_id not in msg.sender:
-            msg.sender.append(self.actor_id)
+    def add_sender_to_msg(self, msg_raw):
+        if self.actor_id not in msg_raw['sender']:
+            msg_raw['sender'].append(self.actor_id)
 
-    def send_to_inner_actors(self, msg):
+    def send_to_inner_actors(self, msg_raw):
         if self.DEBUG_NETWORK_MESSAGES:
-            print "forwarding msg to manager: ", msg.msg_id
-        if type(msg) == type(ProxyActorMessage()):
+            print "forwarding msg to manager: ", msg_raw['msg_id']
+        if 'ProxyActorMessage' in msg_raw['payload'].keys():
             # handled in handle_ProxyActorMessage function
-            gevent.spawn(self.handle_ProxyActorMessage, msg)
+            gevent.spawn(self.handle_ProxyActorMessage, msg_raw)
         else:
-            self.add_sender_to_msg(msg)
-            self.mgr.inbox.put(msg)
+            self.add_sender_to_msg(msg_raw)
+            self.mgr.inbox.put(msg_raw)
 
     def cleanup(self):
         print "cleanup..."

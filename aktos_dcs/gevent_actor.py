@@ -82,7 +82,7 @@ class ActorBase(gevent.Greenlet):
         # ERRONEOUS DUPLICATE MESSAGE EVENT WILL OCCUR
         self.sem.acquire()
         if self.DEBUG_NETWORK_MESSAGES:
-            print "filter process started..."
+            print "filter process started...", msg
             gevent.sleep()
         msg_filtered = None
         msg_timeout = 5
@@ -130,10 +130,12 @@ class Actor(ActorBase):
         #assert(isinstance(msg, Message))
 
         msg = envelp(msg, self.get_msg_id())
+        self.send_raw(msg)
+
+    def send_raw(self, msg):
         msg['sender'].append(self.actor_id)
         if self.DEBUG_INNER_MESSAGES:
             print "sending msg to manager: ", msg
-
         self.mgr.inbox.put(msg)
         
         # give control to another greenlet
