@@ -61,14 +61,15 @@ class ActorBase(gevent.Greenlet):
         def get_message():
             while self.running:
                 msg = self.inbox.get()
-                #gevent.spawn(self.receive, msg)
-                self.receive(msg)
+
                 for subject in msg['payload'].keys():
                     handler_func_name = "handle_" + subject
                     handler_func = getattr(self, handler_func_name, None)
                     if callable(handler_func):
                         #gevent.spawn(handler_func, msg)
-                        handler_func(msg['payload'][subject])
+                        handler_func(msg)
+                    self.receive(msg)
+
 
         gevent.spawn(self.action)
         gevent.spawn(get_message)
@@ -174,6 +175,7 @@ class ActorManager(ActorBase):
                 if self.DEBUG_INNER_MESSAGES:
                     print "manager forwarding message to all actors: ", \
                         actor.actor_id
+                msg['sender'].append(self.actor_id)
                 actor.inbox.put(msg)
             else:
                 if self.DEBUG_INNER_MESSAGES:
@@ -188,6 +190,7 @@ if __name__ == "__main__":
     # TODO: add tests here
     class TestActor(Actor):
         def handle_IoMessage(self, msg):
+            msg = msg_body(msg)
             if msg['pin-name'] == 'hello':
                 print "got message from pin named 'hello':", msg
 
@@ -196,8 +199,11 @@ if __name__ == "__main__":
             val = 0
             while True:
                 val += 1
-                self.send({'IoMessage': {'pin-name': 'hello', 'val': val}})
-                gevent.sleep(0.001)
+                self.send({'IoMessage':
+                               {'pin-name': 'hello',
+                                'val': val
+                                }})
+                gevent.sleep(0.01)
 
     TestActor()
     TestActor2()

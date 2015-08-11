@@ -27,6 +27,9 @@ def envelp(message, msg_id):
         'payload': message,
     }
 
+def msg_body(msg):
+    return msg['payload'].values()[0]
+
 class Message(dict):
 
     sender = []
