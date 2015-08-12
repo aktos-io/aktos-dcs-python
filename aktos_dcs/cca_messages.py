@@ -1,11 +1,3 @@
-try:
-    import simplejson as json
-except ImportError:
-    print "WARNING: module simplejson not found, using json instead..."
-    import json
-
-
-
 import time
 import uuid
 import copy

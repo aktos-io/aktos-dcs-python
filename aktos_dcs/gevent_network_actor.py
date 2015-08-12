@@ -165,12 +165,12 @@ class ProxyActor(Actor):
         for l in dict(self.link).values():
             l.sub = self.context.socket(zmq.SUB)
             l.sub.setsockopt(zmq.SUBSCRIBE, '')
-            l.sub.setsockopt(zmq.RCVHWM, 0)
+            l.sub.setsockopt(zmq.LINGER, 0)
+            l.sub.setsockopt(zmq.RCVHWM, 1)
 
             l.pub = self.context.socket(zmq.PUB)
             l.pub.setsockopt(zmq.LINGER, 0)
-            l.pub.setsockopt(zmq.SNDHWM, 0)
-            l.pub.setsockopt(zmq.SNDTIMEO, 0)
+            l.pub.setsockopt(zmq.SNDHWM, 1)
 
             gevent.spawn(l.receiver)
 
