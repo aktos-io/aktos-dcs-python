@@ -106,9 +106,8 @@ class Actor(ActorBase):
         msg['sender'].append(self.actor_id)
         if self.DEBUG_INNER_MESSAGES:
             print "sending msg to manager: ", msg
-        #self.mgr.inbox.put_nowait(msg)
-        self.mgr.receive(msg)
-        
+        self.mgr.inbox.put(msg)
+
         # give control to another greenlet
         gevent.sleep()
 
@@ -142,32 +141,14 @@ class ActorManager(ActorBase):
         self.actor_inboxes = []
 
     def receive(self, msg):
-        #assert(isinstance(msg, Message))
-
-        start_time = time.time()
+        #start_time = time.time()
         for inbox in [i[1] for i in self.actor_inboxes if i[0] not in msg['sender']]:
             inbox(msg)
-
-        """
-        for actor in self.actors:
-            if actor.actor_id not in msg['sender']:
-                if self.DEBUG_INNER_MESSAGES:
-                    print "manager forwarding message to all actors: ", \
-                        actor.actor_id
-                msg['sender'].append(self.actor_id)
-                #actor.inbox.put_nowait(msg)
-                actor.dispatch_msg(msg)
-                gevent.sleep(0)
-            else:
-                if self.DEBUG_INNER_MESSAGES:
-                    print "manager drops short circuit message..."
-        """
-        print "manager dispatched messages in %f secs" % (time.time() - start_time)
+        #print "manager dispatched messages in %f secs" % (time.time() - start_time)
 
     def register(self, actor_instance):
         self.actors.append(actor_instance)
-        self.actor_inboxes.append([actor_instance.actor_id, actor_instance.dispatch_msg])
-
+        self.actor_inboxes.append([actor_instance.actor_id, actor_instance.inbox.put])
 
 if __name__ == "__main__":
     # TODO: add tests here
@@ -190,5 +171,5 @@ if __name__ == "__main__":
 
     TestActor()
     TestActor2()
-    # cpu: 61%
+    # cpu: 40%
     wait_all()
