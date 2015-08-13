@@ -63,20 +63,21 @@ class ActorBase(gevent.Greenlet):
         """
         pass
 
+    def dispatch_msg(self, msg):
+        for subject in msg['payload']:
+            #self.handle_functions.get("handle_" + subject, self.receive)(msg)
+
+            handler = self.handle_functions.get("handle_" + subject, self.receive)
+            #handler(msg)
+            gevent.spawn(handler, msg)
+
     def _run(self):
         self.running = True
 
         def get_message():
             while self.running:
                 msg = self.inbox.get()
-
-                for subject in msg['payload']:
-                    #self.handle_functions.get("handle_" + subject, self.receive)(msg)
-
-                    handler = self.handle_functions.get("handle_" + subject, self.receive)
-                    #handler(msg)
-                    gevent.spawn(handler, msg)
-
+                self.dispatch_msg(msg)
                 gevent.sleep(0)
 
         gevent.spawn(self.action)
@@ -105,7 +106,8 @@ class Actor(ActorBase):
         msg['sender'].append(self.actor_id)
         if self.DEBUG_INNER_MESSAGES:
             print "sending msg to manager: ", msg
-        self.mgr.inbox.put(msg)
+        #self.mgr.inbox.put_nowait(msg)
+        self.mgr.receive(msg)
         
         # give control to another greenlet
         gevent.sleep()
@@ -137,24 +139,34 @@ class ActorManager(ActorBase):
 
         # actor_obj: "actor name" [default: None]
         self.actors = []
+        self.actor_inboxes = []
 
     def receive(self, msg):
         #assert(isinstance(msg, Message))
 
+        start_time = time.time()
+        for inbox in [i[1] for i in self.actor_inboxes if i[0] not in msg['sender']]:
+            inbox(msg)
+
+        """
         for actor in self.actors:
             if actor.actor_id not in msg['sender']:
                 if self.DEBUG_INNER_MESSAGES:
                     print "manager forwarding message to all actors: ", \
                         actor.actor_id
                 msg['sender'].append(self.actor_id)
-                actor.inbox.put(msg)
+                #actor.inbox.put_nowait(msg)
+                actor.dispatch_msg(msg)
+                gevent.sleep(0)
             else:
                 if self.DEBUG_INNER_MESSAGES:
                     print "manager drops short circuit message..."
-
+        """
+        print "manager dispatched messages in %f secs" % (time.time() - start_time)
 
     def register(self, actor_instance):
         self.actors.append(actor_instance)
+        self.actor_inboxes.append([actor_instance.actor_id, actor_instance.dispatch_msg])
 
 
 if __name__ == "__main__":
