@@ -53,7 +53,7 @@ This library depends on `gevent 1.x`, `libzmq 4.x`, `netifaces`
 #### Linux:
 
 * `$ sudo apt-get install python-dev`
-* `$ sudo easy_install simplejson pyzmq gevent netifaces` (compilations take about 3-5 minutes)
+* `$ sudo easy_install ujson pyzmq gevent netifaces` (compilations take about 3-5 minutes)
 
 ## License
 
