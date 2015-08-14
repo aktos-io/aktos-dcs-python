@@ -165,11 +165,12 @@ class ProxyActor(Actor):
         for l in dict(self.link).values():
             l.sub = self.context.socket(zmq.SUB)
             l.sub.setsockopt(zmq.SUBSCRIBE, '')
+            l.sub.setsockopt(zmq.LINGER, 0)
+            l.sub.setsockopt(zmq.RCVHWM, 1)
 
             l.pub = self.context.socket(zmq.PUB)
             l.pub.setsockopt(zmq.LINGER, 0)
-            l.pub.setsockopt(zmq.SNDHWM, 2)
-            l.pub.setsockopt(zmq.SNDTIMEO, 0)
+            l.pub.setsockopt(zmq.SNDHWM, 1)
 
             gevent.spawn(l.receiver)
 
@@ -238,26 +239,29 @@ class ProxyActor(Actor):
 
         gevent.sleep(2)  # TODO: remove this sleep
 
-        self.introduction_msg = ProxyActorMessage(new_contact_list=self.contacts.contact_list)
+        self.introduction_msg = envelp(
+            {'ProxyActorMessage': {'new_contact_list': self.contacts.contact_list}},
+            self.get_msg_id())
         self.broker_client_send(self.introduction_msg)
         self.broker_send(self.introduction_msg)
 
-    def handle_ProxyActorMessage(self, msg):
-        print "CM delay: ", (time.time() - msg.timestamp)
-        if msg.new_contact_list:
+    def handle_ProxyActorMessage(self, msg_raw):
+        msg = msg_body(msg_raw)
+        print "CM delay: ", (time.time() - msg_raw['timestamp'])
+        if 'new_contact_list' in msg:
             print "got new contact list, merging and redistributing..."
             #pprint(msg)
-            self.contacts.add_from_contact_list(msg.new_contact_list)
+            self.contacts.add_from_contact_list(msg['new_contact_list'])
             #pdb.set_trace()
-            self.broker_all_send(ProxyActorMessage(
-                contact_list=self.contacts.contact_list,
-                reply_to=msg.msg_id))
-        elif msg.contact_list:
+            self.broker_all_send(envelp({'ProxyActorMessage':
+                {'contact_list': self.contacts.contact_list,
+                'reply_to': msg_raw['msg_id']}}, self.get_msg_id()))
+        elif 'contact_list' in msg:
             print "got full contact list, updating own list... "
-            self.contacts.add_from_contact_list(msg.contact_list)
-            if msg.reply_to == self.introduction_msg.msg_id:
+            self.contacts.add_from_contact_list(msg['contact_list'])
+            if msg['reply_to'] == self.introduction_msg['msg_id']:
                 print "connecting whole contact list..."
-                self.connect_to_contacts('client', contact_list=msg.contact_list)
+                self.connect_to_contacts('client', contact_list=msg['contact_list'])
         else:
             print "WARNING: UNHANDLED CONTROL MESSAGE: ", msg
 
@@ -298,10 +302,11 @@ class ProxyActor(Actor):
 
     def receive(self, msg):
         if self.DEBUG_NETWORK_MESSAGES:
-            print "forwarding msg to network: ", msg.msg_id
+            print "forwarding msg to network: ", msg['msg_id']
         self.server_send(msg)
         self.client_send(msg)
         self.broker_send(msg)
+        #self.broker_client_send(msg)
 
     def server_sub_receiver(self):
         #print "server sub receiver started"
@@ -337,75 +342,118 @@ class ProxyActor(Actor):
                 print caller, " received msg..."
             pass
 
-        try:
-            msg = unpack(message)
-        except Exception, e:
-            print e.message
-            return
+        msg_r = unpack(message)
 
-        msg2 = self.filter_msg(msg)
-        if msg2:
+        msg_r = self.filter_msg(msg_r)
+        if msg_r:
             if self.DEBUG_NETWORK_MESSAGES:
-                print "got filtered message: ", msg.msg_id
-            self.send_to_inner_actors(msg2)
+                print "got filtered message: ", msg_r['msg_id']
+            self.send_to_inner_actors(msg_r)
 
             if self.DEBUG_NETWORK_MESSAGES:
-                print "forwarding proxy message ", msg.cls, msg.msg_id
-            self.broker_send(msg2)
-            self.client_send(msg2)
-            self.server_send(msg2)
+                print "forwarding proxy message ", msg_r['payload'].keys()[0], msg_r['msg_id']
+            self.broker_send(msg_r)
+            self.client_send(msg_r)
+            self.server_send(msg_r)
 
-    def server_send(self, msg):
-        self.add_sender_to_msg(msg)
-        msg2 = unpack(pack(msg))
-        msg2.debug.append("server-send")
+    def server_send(self, msg_raw):
+        self.add_sender_to_msg(msg_raw)
+        #msg2 = unpack(pack(msg))
+        #msg2.debug.append("server-send")
         #print "server_send..."
-        message = pack(msg2)
+        message = pack(msg_raw)
         self.link.server.pub.send(message)
 
-    def client_send(self, msg):
-        self.add_sender_to_msg(msg)
-        msg2 = unpack(pack(msg))
-        msg2.debug.append("client-send")
+    def client_send(self, msg_raw):
+        self.add_sender_to_msg(msg_raw)
+        #msg2 = unpack(pack(msg))
+        #msg2.debug.append("client-send")
         #print "client_send..."
-        message = pack(msg2)
+        message = pack(msg_raw)
         self.link.client.pub.send(message)
 
-    def broker_send(self, msg):
+    def broker_send(self, msg_raw):
         if self.this_is_the_broker:
             #pdb.set_trace()
-            self.add_sender_to_msg(msg)
-            msg2 = unpack(pack(msg))
-            msg2.debug.append("broker-send")
+            self.add_sender_to_msg(msg_raw)
+            #msg2 = unpack(pack(msg))
+            #msg2.debug.append("broker-send")
             #print "broker_send..."
-            message = pack(msg2)
+            message = pack(msg_raw)
             self.link.broker.pub.send(message)
 
-    def broker_client_send(self, msg):
-        self.add_sender_to_msg(msg)
-        msg2 = unpack(pack(msg))
-        msg2.debug.append("broker-client-send")
-        message = pack(msg2)
+    def broker_client_send(self, msg_raw):
+        self.add_sender_to_msg(msg_raw)
+        #msg2 = unpack(pack(msg))
+        #msg2.debug.append("broker-client-send")
+        message = pack(msg_raw)
         #print "broker_client_send..."
         self.link.broker_client.pub.send(message)
 
-    def broker_all_send(self, msg):
-        self.broker_send(msg)
-        self.broker_client_send(msg)
+    def broker_all_send(self, msg_raw):
+        self.broker_send(msg_raw)
+        self.broker_client_send(msg_raw)
 
-    def add_sender_to_msg(self, msg):
-        if self.actor_id not in msg.sender:
-            msg.sender.append(self.actor_id)
+    def add_sender_to_msg(self, msg_raw):
+        if self.actor_id not in msg_raw['sender']:
+            msg_raw['sender'].append(self.actor_id)
 
-    def send_to_inner_actors(self, msg):
+    def send_to_inner_actors(self, msg_raw):
         if self.DEBUG_NETWORK_MESSAGES:
-            print "forwarding msg to manager: ", msg.msg_id
-        if type(msg) == type(ProxyActorMessage()):
+            print "forwarding msg to manager: ", msg_raw['msg_id']
+        if 'ProxyActorMessage' in msg_raw['payload']:
             # handled in handle_ProxyActorMessage function
-            gevent.spawn(self.handle_ProxyActorMessage, msg)
+            gevent.spawn(self.handle_ProxyActorMessage, msg_raw)
         else:
-            self.add_sender_to_msg(msg)
-            self.mgr.inbox.put(msg)
+            self.add_sender_to_msg(msg_raw)
+            self.mgr.inbox.put(msg_raw)
+
+    def filter_msg(self, msg):
+        # NOTE: THIS FUNCTION SHOULD BE CALL ONLY ONCE
+        # (CAN NOT BE CHAINED IN FUNCTIONS). ELSE,
+        # ERRONEOUS DUPLICATE MESSAGE EVENT WILL OCCUR
+        try:
+            self.sem.acquire()
+            if self.DEBUG_NETWORK_MESSAGES:
+                print "filter process started...", msg
+                gevent.sleep()
+            msg_filtered = None
+            msg_timeout = 5
+            if self.actor_id in msg['sender']:
+                if self.DEBUG_NETWORK_MESSAGES:
+                    print "dropping short circuit message...", msg['msg_id']
+                #pprint(self.msg_history)
+                pass
+            elif msg['msg_id'] in [i[0] for i in self.msg_history]:
+                if self.DEBUG_NETWORK_MESSAGES:
+                    print "dropping duplicate message...", msg['msg_id']
+                pass
+            elif msg['timestamp'] + msg_timeout < time.time():
+                print "dropping timeouted message (%d secs. old)" % (time.time() - msg['timestamp'])
+            else:
+                self.msg_history.append(list([msg['msg_id'], msg['timestamp']]))
+                msg_filtered = msg
+
+                # Erase messages that will be filtered via "timeout" filter already
+                # TODO: find more efficient way to do this
+                if self.msg_history:
+                    if self.msg_history[0][1] + msg_timeout < time.time():
+                        del self.msg_history[0]
+
+                #self.msg_history = [i for i in self.msg_history if i[1] + msg_timeout > time.time()]
+
+                if self.DEBUG_NETWORK_MESSAGES:
+                    print "passed filter: ", msg['msg_id']
+
+            if self.DEBUG_NETWORK_MESSAGES:
+                print "filter process done..."
+
+            self.sem.release()
+            return msg_filtered
+        except Exception as e:
+            print "DEBUG: unknown message: ", e.message, msg
+            return None
+
 
     def cleanup(self):
         print "cleanup..."

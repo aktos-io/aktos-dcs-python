@@ -2,115 +2,57 @@ __author__ = 'ceremcem'
 
 import inspect
 import gevent
-import gevent.queue
+from gevent.queue import Queue, Full, Empty
 import time
 
-class CcaSignal(object):
-    """
-    for rising edge and falling edge;
-    every reader has a queue
-    every event is put in the reader's queue
-    when reader ask for status, this is got from the reader's queue
-    """
+from gevent_actor import Singleton
 
-    def __init__(self, initial_value=0, edge_max_age=2.0):
-        self.__val = bool(initial_value)
-        self.__val0 = self.__val # previous value
-        self.__usage_points__ = {} # usage_id, edge_queue
-        self.edge_max_age = edge_max_age
+class CcaSignalLoop(object):
+    __metaclass__ = Singleton
+    def __init__(self):
+        try:
+            assert self.signals
+        except:
+            self.signals = []
+
+    def register(self, signal):
+        self.signals.append(signal)
+
+    def loop_point(self):
+        for signal in self.signals:
+            signal.val0 = bool(signal._val)
+            try:
+                signal._val = signal.io_queue[-1]
+                signal.io_queue = []
+            except IndexError:
+                pass
+
+
+
+class CcaSignal(object):
+    def __init__(self, initial_value=0, edge_max_age=0.1):
+        self._val = bool(initial_value)
+        self.val0 = self._val
+        self.supervisor = CcaSignalLoop()
+        self.supervisor.register(self)
+        self.io_queue = []
 
     @property
     def val(self):
-        return self.__val
+        return self._val
 
     @val.setter
     def val(self, value):
-        new_val = bool(value)
-        if new_val != self.__val:
-            self.__val0 = self.__val
-            self.__val = new_val
-
-            if not self.__val0 and self.__val:
-                edge = self.__r_edge_data()
-            else:
-                edge = self.__f_edge_data()
-
-            for queue in self.__usage_points__.values():
-
-                queue.put(edge)
-
-    @property
-    def pval(self):
-        return self.__val0
-
-    f_edge_name = "f_edge"
-    r_edge_name = "r_edge"
-
-    def __f_edge_data(self):
-        return self.__edge_data(self.f_edge_name)
-
-    def __r_edge_data(self):
-        return self.__edge_data(self.r_edge_name)
-
-    def __edge_data(self, edge_name):
-        return [edge_name, time.time()]
-
-    def _edge(self, usage_id):
-        # TODO: if first reader came again, change should loose its importance, thus return "" for everyone
-        if usage_id not in self.__usage_points__.keys():
-            q = gevent.queue.Queue()
-            if self.pval and not self.val:
-                q.put(self.__f_edge_data())
-            elif not self.pval and self.val:
-                q.put(self.__r_edge_data())
-
-            self.__usage_points__[usage_id] = q
-
-        try:
-            while True:
-                curr_edge, event_date = self.__usage_points__[usage_id].get_nowait()
-                if time.time() - event_date > self.edge_max_age:
-                    print("DEBUG: CcaSignal: Too old value!")
-                    curr_edge = ""
-                else:
-                    break
-                gevent.sleep(0)
-        except:
-            curr_edge = ""
-
-        return curr_edge
-
+        self.io_queue.append(value)
 
     def edge(self):
-        """
-        do not move following part of code
-        to another method of this class
-        """
-        f = inspect.currentframe().f_back
-        greenlet_id = id(gevent.getcurrent())
-        caller_id = ".".join(map(str, [f.f_lineno, f.f_lasti, greenlet_id]))
-        return self._edge(caller_id)
+        return self._val != self.val0
 
     def r_edge(self):
-        """
-        do not move following part of code
-        to another method of this class
-        """
-        f = inspect.currentframe().f_back
-        greenlet_id = id(gevent.getcurrent())
-        caller_id = ".".join(map(str, [f.f_lineno, f.f_lasti, greenlet_id]))
-        return self._edge(caller_id) == self.r_edge_name
+        return not self.val0 and self._val
 
     def f_edge(self):
-        """
-        do not move following part of code
-        to another method of this class
-        """
-        f = inspect.currentframe().f_back
-        greenlet_id = id(gevent.getcurrent())
-        caller_id = ".".join(map(str, [f.f_lineno, f.f_lasti, greenlet_id]))
-        return self._edge(caller_id) == self.f_edge_name
-
+        return self._val and not self.val0
 
 def unit_test():
     import time

@@ -4,10 +4,22 @@ __author__ = 'ceremcem'
 from aktos_dcs import *
 
 class Ponger(Actor):
+    def action(self):
+        self.max_latency = 0
+        self.min_latency = 9999
+
     def handle_PongMessage(self, msg):
         body = msg_body(msg)
-        print "Ponger got pong message:", body['text'], (time.time() - msg['timestamp'])
-        sleep(2)
+        latency = time.time() - msg['timestamp']
+        if self.max_latency < latency:
+            self.max_latency = latency
+            print "latency (max, min): ", self.max_latency, self.min_latency
+
+        if self.min_latency > latency:
+            self.min_latency = latency
+            print "latency (max, min): ", self.max_latency, self.min_latency
+
+        sleep(0.01)
         self.send({'PingMessage': {'text': "Hello pinger, this is ponger 1!"}})
 
 if __name__ == "__main__":

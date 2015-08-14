@@ -3,12 +3,14 @@
 
 import gevent
 from gevent.queue import Queue
+import signal
 
 import atexit
 import traceback
 from pprint import pprint
-
+from wait_all import wait_all
 from Messages import *
+import inspect
 
 import uuid
 
@@ -23,13 +25,26 @@ class ActorBase(gevent.Greenlet):
     def __init__(self, start_on_init=True):
         self.inbox = Queue()
         gevent.Greenlet.__init__(self)
-        self.actor_id = str(uuid.uuid4())
+        self.actor_id = uuid.uuid4().hex
+        self.msg_serial = 0
         if start_on_init:
             self.start()
         self.msg_history = []
 
         self.sem = Semaphore()
         atexit.register(self.cleanup)
+
+        functions = inspect.getmembers(self, predicate=inspect.ismethod)
+        self.handle_functions = {}
+        for f in functions:
+            if f[0].startswith("handle_"):
+                #print "this is handle funct: ", f
+                self.handle_functions[f[0]] = f[1]
+        
+    def get_msg_id(self):
+        msg_id = '.'.join([self.actor_id, str(self.msg_serial)])
+        self.msg_serial += 1
+        return msg_id
 
     def receive(self, msg):
         """
@@ -49,68 +64,28 @@ class ActorBase(gevent.Greenlet):
         """
         pass
 
+    def dispatch_msg(self, msg):
+        for subject in msg['payload']:
+            #self.handle_functions.get("handle_" + subject, self.receive)(msg)
+
+            handler = self.handle_functions.get("handle_" + subject, self.receive)
+            #handler(msg)
+            gevent.spawn(handler, msg)
+
     def _run(self):
         self.running = True
 
         def get_message():
             while self.running:
                 msg = self.inbox.get()
-                #msg = self.filter_msg(msg)
-                if msg:
-                    gevent.spawn(self.receive, msg)
-                    #print("message handler spawned!!")
-
-                    # pass the XYZMessage to "handle_XYZMessage()"
-                    # function if such a function exists:
-                    handler_func_name = "handle_" + msg.__class__.__name__
-                    handler_func = getattr(self, handler_func_name, None)
-                    if callable(handler_func):
-                        gevent.spawn(handler_func, msg)
+                self.dispatch_msg(msg)
+                gevent.sleep(0)
 
         gevent.spawn(self.action)
         gevent.spawn(get_message)
         while True:
-            gevent.sleep(1)
+            gevent.sleep(99999)
 
-    def filter_msg(self, msg):
-        # NOTE: THIS FUNCTION SHOULD BE CALL ONLY ONCE
-        # (CAN NOT BE CHAINED IN FUNCTIONS). ELSE,
-        # ERRONEOUS DUPLICATE MESSAGE EVENT WILL OCCUR
-        self.sem.acquire()
-        if self.DEBUG_NETWORK_MESSAGES:
-            print "filter process started..."
-            gevent.sleep()
-        msg_filtered = None
-        msg_timeout = 5
-        if self.actor_id in msg.sender:
-            if self.DEBUG_NETWORK_MESSAGES:
-                print "dropping short circuit message...", msg.msg_id
-            #pprint(self.msg_history)
-            pass
-        elif msg.msg_id in [i[0] for i in self.msg_history]:
-            if self.DEBUG_NETWORK_MESSAGES:
-                print "dropping duplicate message...", msg.msg_id
-            pass
-        elif msg.timestamp + msg_timeout < time.time():
-            print "dropping timeouted message (%d secs. old)" % (time.time() - msg.timestamp)
-        else:
-            self.msg_history.append(list([msg.msg_id, msg.timestamp, msg.debug]))
-            msg_filtered = msg
-
-            # Erase messages that will be filtered via "timeout" filter already
-            # TODO: find more efficient way to do this
-            if self.msg_history:
-                if self.msg_history[0][1] + msg_timeout < time.time():
-                    del self.msg_history[0]
-
-            if self.DEBUG_NETWORK_MESSAGES:
-                print "passed filter: ", msg.msg_id
-
-        if self.DEBUG_NETWORK_MESSAGES:
-            print "filter process done..."
-
-        self.sem.release()
-        return msg_filtered
 
 class Actor(ActorBase):
 
@@ -123,15 +98,17 @@ class Actor(ActorBase):
         """
         send message to the actor manager
         """
-        assert(isinstance(msg, Message))
+        #assert(isinstance(msg, Message))
 
+        msg = envelp(msg, self.get_msg_id())
+        self.send_raw(msg)
+
+    def send_raw(self, msg):
+        msg['sender'].append(self.actor_id)
         if self.DEBUG_INNER_MESSAGES:
-            print "sending msg to manager: ", msg.cls
-        msg.sender.append(self.actor_id)
-        msg.debug.append("actor")
-
+            print "sending msg to manager: ", msg
         self.mgr.inbox.put(msg)
-        
+
         # give control to another greenlet
         gevent.sleep()
 
@@ -162,26 +139,50 @@ class ActorManager(ActorBase):
 
         # actor_obj: "actor name" [default: None]
         self.actors = []
+        self.actor_inboxes = []
+
+        #gevent.signal(signal.SIGINT, self.manager_cleanup)
+        #gevent.signal(signal.SIGTERM, self.manager_cleanup)
+
 
     def receive(self, msg):
-        assert(isinstance(msg, Message))
-
-        for actor in self.actors:
-            if actor.actor_id not in msg.sender:
-                if self.DEBUG_INNER_MESSAGES:
-                    print "manager forwarding message to all actors: ", \
-                        actor.actor_id
-                msg.debug.append('manager')
-                actor.inbox.put(msg)
-            else:
-                if self.DEBUG_INNER_MESSAGES:
-                    print "manager drops short circuit message..."
-
+        #start_time = time.time()
+        for inbox in [i[1] for i in self.actor_inboxes if i[0] not in msg['sender']]:
+            inbox(msg)
+        #print "manager dispatched messages in %f secs" % (time.time() - start_time)
 
     def register(self, actor_instance):
         self.actors.append(actor_instance)
+        self.actor_inboxes.append([actor_instance.actor_id, actor_instance.inbox.put])
 
+    """
+    def manager_cleanup(self):
+        print "manager cleanup!"
+        for actor in self.actors:
+            actor.cleanup()
+
+    """
 
 if __name__ == "__main__":
     # TODO: add tests here
-    pass
+    class TestActor(Actor):
+        def handle_IoMessage(self, msg):
+            msg = msg_body(msg)
+            if msg['pin-name'] == 'hello':
+                print "got message from pin named 'hello':", msg
+
+    class TestActor2(Actor):
+        def action(self):
+            val = 0
+            while True:
+                val += 1
+                self.send({'IoMessage':
+                               {'pin-name': 'hello',
+                                'val': val
+                                }})
+                gevent.sleep(0.01)
+
+    TestActor()
+    TestActor2()
+    # cpu: 40%
+    wait_all()
