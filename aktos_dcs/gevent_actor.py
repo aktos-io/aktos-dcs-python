@@ -3,6 +3,7 @@
 
 import gevent
 from gevent.queue import Queue
+import signal
 
 import atexit
 import traceback
@@ -140,6 +141,10 @@ class ActorManager(ActorBase):
         self.actors = []
         self.actor_inboxes = []
 
+        #gevent.signal(signal.SIGINT, self.manager_cleanup)
+        #gevent.signal(signal.SIGTERM, self.manager_cleanup)
+
+
     def receive(self, msg):
         #start_time = time.time()
         for inbox in [i[1] for i in self.actor_inboxes if i[0] not in msg['sender']]:
@@ -149,6 +154,14 @@ class ActorManager(ActorBase):
     def register(self, actor_instance):
         self.actors.append(actor_instance)
         self.actor_inboxes.append([actor_instance.actor_id, actor_instance.inbox.put])
+
+    """
+    def manager_cleanup(self):
+        print "manager cleanup!"
+        for actor in self.actors:
+            actor.cleanup()
+
+    """
 
 if __name__ == "__main__":
     # TODO: add tests here
