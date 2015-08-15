@@ -380,7 +380,6 @@ class ProxyActor(Actor):
             #msg2.debug.append("broker-send")
             #print "broker_send..."
             message = pack(msg_raw)
-            print "broker sending", msg_raw['msg_id']
             self.link.broker.pub.send(message)
 
     def broker_client_send(self, msg_raw):
