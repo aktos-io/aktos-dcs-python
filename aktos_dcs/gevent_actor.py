@@ -40,7 +40,7 @@ class ActorBase(gevent.Greenlet):
             if f[0].startswith("handle_"):
                 #print "this is handle funct: ", f
                 self.handle_functions[f[0]] = f[1]
-        
+
     def get_msg_id(self):
         msg_id = '.'.join([self.actor_id, str(self.msg_serial)])
         self.msg_serial += 1
@@ -93,6 +93,7 @@ class Actor(ActorBase):
         ActorBase.__init__(self)
         self.mgr = ActorManager()
         self.mgr.register(self)
+        self.broadcast_inbox = self.mgr.inbox.put
 
     def send(self, msg):
         """
@@ -103,14 +104,24 @@ class Actor(ActorBase):
         msg = envelp(msg, self.get_msg_id())
         self.send_raw(msg)
 
+        # TODO: Fix this: this little delay is to be able to
+        # send messages one after the other
+        #
+        # without this dela, following code is not working:
+        #
+        #      the_actor.send({'a': 'message'})
+        #      the_actor.send({'a': 'different message'})
+        #
+        gevent.sleep(0.000000000000000000000000001)
+
     def send_raw(self, msg):
         msg['sender'].append(self.actor_id)
         if self.DEBUG_INNER_MESSAGES:
             print "sending msg to manager: ", msg
-        self.mgr.inbox.put(msg)
+        self.broadcast_inbox(msg)
 
         # give control to another greenlet
-        gevent.sleep()
+        #gevent.sleep()
 
 class Singleton(type):
     """
