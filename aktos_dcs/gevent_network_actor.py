@@ -342,19 +342,24 @@ class ProxyActor(Actor):
                 print caller, " received msg..."
             pass
 
-        msg_r = unpack(message)
+        #print "proxy actor got message: ", message
 
-        msg_r = self.filter_msg(msg_r)
-        if msg_r:
-            if self.DEBUG_NETWORK_MESSAGES:
-                print "got filtered message: ", msg_r['msg_id']
-            self.send_to_inner_actors(msg_r)
+        try:
+            msg_r = unpack(message)
 
-            if self.DEBUG_NETWORK_MESSAGES:
-                print "forwarding proxy message ", msg_r['payload'].keys()[0], msg_r['msg_id']
-            self.broker_send(msg_r)
-            self.client_send(msg_r)
-            self.server_send(msg_r)
+            msg_r = self.filter_msg(msg_r)
+            if msg_r:
+                if self.DEBUG_NETWORK_MESSAGES:
+                    print "got filtered message: ", msg_r['msg_id']
+                self.send_to_inner_actors(msg_r)
+
+                if self.DEBUG_NETWORK_MESSAGES:
+                    print "forwarding proxy message ", msg_r['payload'].keys()[0], msg_r['msg_id']
+                self.broker_send(msg_r)
+                self.client_send(msg_r)
+                self.server_send(msg_r)
+        except:
+            pass
 
     def server_send(self, msg_raw):
         self.add_sender_to_msg(msg_raw)
