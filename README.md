@@ -57,6 +57,27 @@ This library depends on `gevent 1.x`, `libzmq 4.x`, `netifaces`, `ujson`
 * clone or download aktos-dcs
 * `$ cd aktos-dcs && sudo install-on-linux.sh` (compilations may take about 3-5 minutes)
 
+## Message Format
+
+Messages are simple dictionaries, basically in `{'Subject': data}` format. Here are some examples: 
+
+* To set `green-led` pin to `True`, one must send the following message: 
+
+  Python: 
+  
+      msg = { 'IoMessage': { 'pin_name': 'green-led', 'val': True } }
+            
+  Javascript: 
+  
+      var msg = { IoMessage: { pin_name: 'green-led', val: true } }
+
+  LiveScript:
+  
+      msg = IoMessage: do 
+        pin_name: \green-led
+        val: on
+        
+
 ## License
 
 BSD License. 
