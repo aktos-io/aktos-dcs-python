@@ -42,18 +42,19 @@ Should work on any platform, tested on:
 
 ## Install 
 
-This library depends on `gevent 1.x`, `libzmq 4.x`, `netifaces`
+This library depends on `gevent 1.x`, `libzmq 4.x`, `netifaces`, `ujson`
 
 #### Windows: 
 
 * install [Python 2.7.x](https://www.python.org/downloads/)
 * install http://aka.ms/vcpython27
-* download and run "[windows-install-deps.cmd](https://raw.githubusercontent.com/ceremcem/aktos-dcs/master/windows-install-deps.cmd)" (right click, "save as...", download, double click on it) 
+* clone or download aktos-dcs
+* run (double click on) "aktos-dcs\\install-on-windows.cmd 
 
 #### Linux:
 
-* `$ sudo apt-get install python-dev`
-* `$ sudo easy_install ujson pyzmq gevent netifaces` (compilations take about 3-5 minutes)
+* clone or download aktos-dcs
+* `$ cd aktos-dcs && sudo install-on-linux.sh` (compilations may take about 3-5 minutes)
 
 ## License
 
