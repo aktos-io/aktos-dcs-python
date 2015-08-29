@@ -23,6 +23,7 @@ For a short tutorial, see `TESTS.md`.
 1. Serial port usage example: https://github.com/ceremcem/aktos-dcs-pyserial-example
 2. WEB UI example: https://github.com/ceremcem/aktos-dcs-webui-example
 3. aktos-dcs-lib-cca: https://github.com/ceremcem/aktos-dcs-lib-cca
+4. aktos-website: https://github.com/ceremcem/aktos-website
 
 ## Distributed coding
 
@@ -42,18 +43,40 @@ Should work on any platform, tested on:
 
 ## Install 
 
-This library depends on `gevent 1.x`, `libzmq 4.x`, `netifaces`
+This library depends on `gevent 1.x`, `libzmq 4.x`, `netifaces`, `ujson`
 
 #### Windows: 
 
 * install [Python 2.7.x](https://www.python.org/downloads/)
 * install http://aka.ms/vcpython27
-* download and run "[windows-install-deps.cmd](https://raw.githubusercontent.com/ceremcem/aktos-dcs/master/windows-install-deps.cmd)" (right click, "save as...", download, double click on it) 
+* clone or download aktos-dcs
+* run (double click on) "aktos-dcs\\install-on-windows.cmd 
 
 #### Linux:
 
-* `$ sudo apt-get install python-dev`
-* `$ sudo easy_install ujson pyzmq gevent netifaces` (compilations take about 3-5 minutes)
+* clone or download aktos-dcs
+* `$ cd aktos-dcs && sudo install-on-linux.sh` (compilations may take about 3-5 minutes)
+
+## Message Format
+
+Messages are simple dictionaries, basically in `{'Subject': data}` format. Here are some examples: 
+
+* To set `green-led` pin to `True`, one must send the following message: 
+
+  Python: 
+  
+      msg = { 'IoMessage': { 'pin_name': 'green-led', 'val': True } }
+            
+  Javascript: 
+  
+      var msg = { IoMessage: { pin_name: 'green-led', val: true } }
+
+  LiveScript:
+  
+      msg = IoMessage: do 
+        pin_name: \green-led
+        val: on
+        
 
 ## License
 
