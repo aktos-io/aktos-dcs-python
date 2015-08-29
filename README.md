@@ -25,6 +25,10 @@ For a short tutorial, see `TESTS.md`.
 3. aktos-dcs-lib-cca: https://github.com/ceremcem/aktos-dcs-lib-cca
 4. aktos-website: https://github.com/ceremcem/aktos-website
 
+## Other Implementations
+
+1. Java: https://github.com/Canburakt/aktos-dcs-java
+
 ## Distributed coding
 
 Actors can be run concurrently
