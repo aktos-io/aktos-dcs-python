@@ -3,18 +3,11 @@
 
 import gevent
 from gevent.queue import Queue
-import signal
-
 import atexit
-import traceback
-from pprint import pprint
 from wait_all import wait_all
 from Messages import *
 import inspect
-
-import uuid
-
-import pdb
+import shortuuid
 
 from gevent.lock import Semaphore
 
@@ -25,7 +18,9 @@ class ActorBase(gevent.Greenlet):
     def __init__(self, start_on_init=True):
         self.inbox = Queue()
         gevent.Greenlet.__init__(self)
-        self.actor_id = uuid.uuid4().hex
+
+        self.actor_id = shortuuid.ShortUUID().random(length=5)
+
         self.msg_serial = 0
         if start_on_init:
             self.start()

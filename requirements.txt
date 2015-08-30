@@ -3,3 +3,4 @@ pyzmq
 greenlet 
 netifaces
 gevent 
+shortuuid
