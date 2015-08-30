@@ -28,6 +28,7 @@ For a short tutorial, see `TESTS.md`.
 ## Other Implementations
 
 1. Java: https://github.com/Canburakt/aktos-dcs-java
+2. LiveScript: https://github.com/ceremcem/aktos-website/blob/master/app/aktos-dcs.ls
 
 ## Distributed coding
 
