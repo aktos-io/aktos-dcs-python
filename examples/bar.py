@@ -5,13 +5,14 @@ from aktos_dcs import *
 
 class Bar(Actor):
     def handle_BarMessage(self, msg):
-        print "Bar got BarMessage: ", msg.text, (time.time() - msg.timestamp), msg.debug
+        msg = msg_body(msg)
+        print "Bar got BarMessage: ", msg['text']
         sleep(1)
-        self.send(FooMessage(text="Hello foo, this is bar from cca!"))
+        self.send({'FooMessage': {'text': "Hello foo, this is bar from cca!"}})
 
 if __name__ == "__main__":
     ProxyActor()
     bar = Bar()
-    bar.send(FooMessage(text="startup message from bar from cca..."))
+    bar.send({'FooMessage': {'text': "startup message from bar from cca..."}})
 
     wait_all()
