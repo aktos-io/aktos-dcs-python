@@ -20,7 +20,7 @@ class CcaSignalLoop(object):
 
     def loop_point(self):
         for signal in self.signals:
-            signal.val0 = bool(signal._val)
+            signal.val0 = int(signal._val)
             try:
                 signal._val = signal.io_queue[-1]
                 signal.io_queue = []
@@ -31,7 +31,7 @@ class CcaSignalLoop(object):
 
 class CcaSignal(object):
     def __init__(self, initial_value=0, edge_max_age=0.1):
-        self._val = bool(initial_value)
+        self._val = int(initial_value)
         self.val0 = self._val
         self.supervisor = CcaSignalLoop()
         self.supervisor.register(self)
@@ -49,10 +49,10 @@ class CcaSignal(object):
         return self._val != self.val0
 
     def r_edge(self):
-        return not self.val0 and self._val
+        return self.val0 < self._val
 
     def f_edge(self):
-        return self._val and not self.val0
+        return self.val0 > self._val
 
 def unit_test():
     import time
