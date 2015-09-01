@@ -14,7 +14,7 @@ Message transport layer is built on top of ZeroMQ library, which has [Python][4]
 [6]: https://github.com/zeromq/cppzmq
 [7]: http://zeromq.org/bindings:_start
 
-Gevent based actor model (inspired from Erlang) is used for concurrency. This means, concurrency comes for free. Since there are no real threads or subprocesses, debugging is easy. N-to-N connections are managed out of the box, so there is no single point of failure exists. 
+Gevent based actor model (inspired from Erlang) is used for concurrency. This means, [concurrency comes for free](http://www.projectcalico.org/the-sharp-edges-of-gevent/). Since there are no real threads or subprocesses, debugging is easy. N-to-N connections are managed out of the box, so there is no single point of failure exists. 
 
 For a short tutorial, see [TESTS.md](./TESTS.md). 
 
@@ -28,7 +28,7 @@ For a short tutorial, see [TESTS.md](./TESTS.md).
 ## Other Implementations
 
 1. Java: https://github.com/Canburakt/aktos-dcs-java
-2. Node.js (in LiveScript): https://github.com/ceremcem/aktos-website/blob/master/app/aktos-dcs.ls
+2. Node.js (in LiveScript): https://github.com/ceremcem/aktos-website/tree/master/app/modules/aktos-dcs
 
 ## Distributed coding
 
