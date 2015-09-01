@@ -16,7 +16,7 @@ Message transport layer is built on top of ZeroMQ library, which has [Python][4]
 
 Gevent based actor model (inspired from Erlang) is used for concurrency. This means, concurrency comes for free. Since there are no real threads or subprocesses, debugging is easy. N-to-N connections are managed out of the box, so there is no single point of failure exists. 
 
-For a short tutorial, see `TESTS.md`. 
+For a short tutorial, see [TESTS.md](./TESTS.md). 
 
 ## Other Examples
 
@@ -66,8 +66,8 @@ This library depends on `gevent 1.x`, `libzmq 4.x`, `netifaces`, `ujson`
 
 Messages are simple dictionaries, represented in JSON format. Mandatory keys of a message are as follows: 
 
-  * sender: Array of strings. First element is creator's, rest is forwarder's `id`'s.
-  * timestamp: Unix timestamp (seconds since 1.1.1970)
+  * sender: Array of strings. First element is creator's, rest is forwarders' `id`'s.
+  * timestamp: [Unix time stamp](http://www.unixtimestamp.com/)
   * msg_id: a unique message id. practically concatenate `creator_id` and `i` where `i` is sequence number of message
   * payload: a dictionary, described below. 
 
@@ -85,12 +85,16 @@ Payload is basically in `{'Subject': data}` format. Here are some examples:
   
     LiveScript:
     
-        msg = IoMessage: do 
-          pin_name: \green-led
-          val: on
+        msg = IoMessage: pin_name: \green-led, val: on
+
+        or 
+        
+        msg = IoMessage: 
+               pin_name: \green-led
+               val: on 
           
     
-So, full message should look like this:
+So, a full message should look like this:
 
     {"sender":["5fa6c6d7-077a-4467-9bb3-1f2c2ee58d78","5e7b8786-4885-4e2d-b4c6-98dc21856ba9","3444aadc-ed01-4ce6-94bc-ae144510eb31","41dl-Gj3"],"timestamp":1440885632.49,"msg_id":"5fa6c6d7-077a-4467-9bb3-1f2c2ee58d78.147","payload":{"IoMessage":{"pin_name":"green-led","val":true}}}
 
