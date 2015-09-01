@@ -5,7 +5,6 @@ import gevent
 from gevent.queue import Queue
 import atexit
 from wait_all import wait_all
-from Messages import *
 import inspect
 import shortuuid
 

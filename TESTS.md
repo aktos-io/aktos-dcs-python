@@ -3,14 +3,9 @@
 These tests should be performed on every merge to the master branch and can be considered as a tutorial.
 
 
-0. Change current working directory to "examples"
+1. Change current working directory to "examples"
 
     * cd examples
-
-1. Messages could run tests without error.
-
-    * run `python test-messages.py`
-    * see "all went OK" message.
 
 2. Pinger and Ponger should run in the same process without error.
 
@@ -48,14 +43,14 @@ These tests should be performed on every merge to the master branch and can be c
     * run pinger.py on machine-A
     * see they are started messaging again.
 
-6. {{LAN-test-3}} inherit current contact_list
+7. {{LAN-test-3}} inherit current contact_list
 
     * run {{LAN-test-2}}
     * run foo.py on machine-A (without ProxyActor parameter)
     * run bar.py on machine-B (without ProxyActor parameter)
     * see foo.py and bar.py can message eachother.
 
-7. {{LAN-test-4}} detect multiple local IP addresses but prevent from duplicate messages
+8. {{LAN-test-4}} detect multiple local IP addresses but prevent from duplicate messages
 
     * setup additional addresses to machine-A and machine-B
     * see you have more than 1 address on machine
@@ -63,7 +58,7 @@ These tests should be performed on every merge to the master branch and can be c
     * run {{LAN-test-3}}
     * see messages are the same as in {{LAN-test-3}}
 
-8. {{proxy-test-1}} test if processes connect behind NAT
+9. {{proxy-test-1}} test if processes connect behind NAT
 
     * setup machine-A behind NAT with SSH server or standard modem port forward
     * run pinger.py on machine-A
@@ -84,7 +79,7 @@ These tests should be performed on every merge to the master branch and can be c
     * start pinger.py on machine-A again
     * see they are messaging
 
-9. {{proxy-test-2}} test if multiple processes can use same tunnel
+10. {{proxy-test-2}} test if multiple processes can use same tunnel
 
     * run {{proxy-test-1}}
     * run foo.py on machine-A without any parameter of ProxyActor
@@ -93,7 +88,7 @@ These tests should be performed on every merge to the master branch and can be c
     * see bar.py connects (and exchanges contact-list) with ponger.py (they are in the same machine)
     * see foo.py and bar.py are messaging
 
-10. {{proxy-test-3}} test if a machine that can reach another with tunnels is also
+11. {{proxy-test-3}} test if a machine that can reach another with tunnels is also
     proxies messages via another machine in LAN
 
     * setup machine-C that is in the same LAN with machine-B
@@ -103,7 +98,7 @@ These tests should be performed on every merge to the master branch and can be c
     * run bar.py on machine-C
     * see if bar.py@machine-C and foo.py@machine-A are messaging
 
-11. {{AppMessages-test}} test if application specific messages working
+12. {{AppMessages-test}} test if application specific messages working
 
     * run test-app-messages.py
     * run test-app-messages2.py
