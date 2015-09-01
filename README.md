@@ -85,12 +85,16 @@ Payload is basically in `{'Subject': data}` format. Here are some examples:
   
     LiveScript:
     
-        msg = IoMessage: do 
-          pin_name: \green-led
-          val: on
+        msg = IoMessage: pin_name: \green-led, val: on
+
+        or 
+        
+        msg = IoMessage: 
+               pin_name: \green-led
+               val: on 
           
     
-So, full message should look like this:
+So, a full message should look like this:
 
     {"sender":["5fa6c6d7-077a-4467-9bb3-1f2c2ee58d78","5e7b8786-4885-4e2d-b4c6-98dc21856ba9","3444aadc-ed01-4ce6-94bc-ae144510eb31","41dl-Gj3"],"timestamp":1440885632.49,"msg_id":"5fa6c6d7-077a-4467-9bb3-1f2c2ee58d78.147","payload":{"IoMessage":{"pin_name":"green-led","val":true}}}
 
