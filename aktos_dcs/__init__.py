@@ -1,4 +1,4 @@
-from cca_messages import *
+from messages import *
 try:
     from AppMessages import *
 except ImportError:

@@ -4,6 +4,7 @@ __author__ = 'ceremcem'
 import gevent
 from gevent_actor import Actor
 import zmq.green as zmq
+from messages import *
 from gevent import socket
 from pprint import pprint
 import copy
