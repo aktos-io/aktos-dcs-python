@@ -6,9 +6,9 @@ if [[ $(id -u) > 0 ]]; then
         exit
 fi
 
+apt-get update
 if ! hash pip; then
 	echo "python-pip is needed..."
-	apt-get update
 	apt-get install -y python-pip
 fi 
 apt-get install -y python-dev 
