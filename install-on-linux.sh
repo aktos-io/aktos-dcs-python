@@ -12,6 +12,8 @@ if ! hash pip; then
 	apt-get install -y python-pip
 fi 
 apt-get install -y python-dev 
+apt-get install -y python-zmq
+apt-get install -y libpgm-5.1-0
 apt-get install -y libzmq3-dev || { 
 	echo; 
 	echo "ERROR: libzmq 4.x is needed!"
