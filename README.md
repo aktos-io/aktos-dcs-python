@@ -70,6 +70,7 @@ See:  [Developer](./Developer-guide.md)
 
 * https://github.com/ceremcem/aktos-dcs-tools : for easy remote development 
 * https://github.com/ceremcem/aktos-dcs-lib-cca: library for automation projects 
+* https://github.com/ceremcem/aktos-website: Webui Scada system example including web framework
 
 
 ## License
