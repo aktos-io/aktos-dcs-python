@@ -30,6 +30,7 @@ For a short tutorial, see [TESTS.md](./TESTS.md).
 1. Java: https://github.com/Canburakt/aktos-dcs-java
 2. Node.js (in LiveScript): https://github.com/ceremcem/aktos-website/tree/master/app/modules/aktos-dcs
 
+
 ## Distributed coding
 
 Actors can be run concurrently
@@ -64,7 +65,7 @@ This library depends on `gevent 1.x`, `libzmq 4.x`, `netifaces`, `ujson`
 
 ## Guides for further implementations
 
-See:  [Developer](./Developer-guide.md)
+See:  [Developer Guide](./Developer-guide.md)
 
 ## Recommended Tools and Libraries
 
@@ -73,6 +74,9 @@ See:  [Developer](./Developer-guide.md)
 * https://github.com/ceremcem/aktos-dcs-lib-cca: library for automation projects 
 * https://github.com/ceremcem/aktos-website: Webui Scada system example including web framework
 
+## Similar Projects
+
+* Crossbar.io: https://github.com/crossbario
 
 ## License
 
