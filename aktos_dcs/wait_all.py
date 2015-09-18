@@ -5,6 +5,6 @@ import gevent
 def wait_all():
     try:
         while True:
-            gevent.sleep(1)
+            gevent.sleep(9999999999)
     except:
         pass

@@ -9,6 +9,8 @@ import inspect
 import shortuuid
 from messages import *
 from gevent.lock import Semaphore
+import signal
+from gevent.hub import GreenletExit
 
 class ActorBase(gevent.Greenlet):
     DEBUG_NETWORK_MESSAGES = False
@@ -17,6 +19,8 @@ class ActorBase(gevent.Greenlet):
     def __init__(self, start_on_init=True):
         self.inbox = Queue()
         gevent.Greenlet.__init__(self)
+        gevent.signal(signal.SIGTERM, self.__cleanup)
+        gevent.signal(signal.SIGINT, self.__cleanup)
 
         self.actor_id = shortuuid.ShortUUID().random(length=5)
 
@@ -26,7 +30,7 @@ class ActorBase(gevent.Greenlet):
         self.msg_history = []
 
         self.sem = Semaphore()
-        atexit.register(self.cleanup)
+        atexit.register(self.__cleanup)
 
         functions = inspect.getmembers(self, predicate=inspect.ismethod)
         self.handle_functions = {}
@@ -34,6 +38,16 @@ class ActorBase(gevent.Greenlet):
             if f[0].startswith("handle_"):
                 #print "this is handle funct: ", f
                 self.handle_functions[f[0]] = f[1]
+
+    def __cleanup(self, *args, **kwargs):
+        #print "cleaning up!"
+        self.running = False
+        self.cleanup()
+
+        # TODO: kill properly!
+        self.kill()
+        #print "args", args, kwargs
+        raise GreenletExit
 
     def get_msg_id(self):
         msg_id = '.'.join([self.actor_id, str(self.msg_serial)])

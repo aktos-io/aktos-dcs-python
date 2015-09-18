@@ -23,5 +23,9 @@ def envelp(message, msg_id):
     }
 
 def msg_body(msg):
+    print "WARNING: This method is depreciated, use get_msg_body() instead."
+    return msg['payload'].values()[0]
+
+def get_msg_body(msg):
     return msg['payload'].values()[0]
 
