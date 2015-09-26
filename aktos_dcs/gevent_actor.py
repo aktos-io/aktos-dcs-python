@@ -24,13 +24,17 @@ class ActorBase(gevent.Greenlet):
 
         self.actor_id = shortuuid.ShortUUID().random(length=5)
 
+        def dummy_broadcast(msg):
+            print "broadcasting msg (DUMMY) : ", msg
+        self.broadcast_inbox = dummy_broadcast
+
         self.msg_serial = 0
         if start_on_init:
             self.start()
         self.msg_history = []
 
         self.sem = Semaphore()
-        atexit.register(self.__cleanup)
+        #atexit.register(self.__cleanup)
 
         functions = inspect.getmembers(self, predicate=inspect.ismethod)
         self.handle_functions = {}
@@ -73,12 +77,31 @@ class ActorBase(gevent.Greenlet):
         pass
 
     def dispatch_msg(self, msg):
+        try:
+            assert msg['reply_for'] == self.waiting_msg
+            self.block = False
+        except:
+            pass
+
         for subject in msg['payload']:
             #self.handle_functions.get("handle_" + subject, self.receive)(msg)
 
             handler = self.handle_functions.get("handle_" + subject, self.receive)
             #handler(msg)
-            gevent.spawn(handler, msg)
+            try:
+                assert msg['asked']
+                gevent.spawn(self.blocker_handler, handler, msg)
+            except:
+                gevent.spawn(handler, msg)
+
+    def blocker_handler(self, orig_handler, msg):
+        orig_handler(msg)
+
+        reply_payload = {'CtrlMessage': {}}
+        reply_msg_id = self.get_msg_id()
+        reply_msg = envelp(reply_payload, reply_msg_id)
+        reply_msg['reply_for'] = msg['msg_id']
+        self.send_raw(reply_msg)
 
     def _run(self):
         self.running = True
@@ -93,15 +116,6 @@ class ActorBase(gevent.Greenlet):
         gevent.spawn(get_message)
         while True:
             gevent.sleep(99999)
-
-
-class Actor(ActorBase):
-
-    def __init__(self):
-        ActorBase.__init__(self)
-        self.mgr = ActorManager()
-        self.mgr.register(self)
-        self.broadcast_inbox = self.mgr.inbox.put
 
     def send(self, msg):
         """
@@ -130,6 +144,24 @@ class Actor(ActorBase):
 
         # give control to another greenlet
         #gevent.sleep()
+
+    def ask(self, msg):
+        msg_id = self.get_msg_id()
+        msg = envelp(msg, msg_id)
+        msg['asked'] = True
+        self.send_raw(msg)
+        self.block = True
+        self.waiting_msg = msg_id
+        while self.block:
+            gevent.sleep(0.000001)
+
+class Actor(ActorBase):
+    def __init__(self):
+        ActorBase.__init__(self)
+        self.mgr = ActorManager()
+        self.mgr.register(self)
+        self.broadcast_inbox = self.mgr.inbox.put
+
 
 class Singleton(type):
     """
@@ -186,7 +218,7 @@ if __name__ == "__main__":
     # TODO: add tests here
     class TestActor(Actor):
         def handle_IoMessage(self, msg):
-            msg = msg_body(msg)
+            msg = get_msg_body(msg)
             if msg['pin-name'] == 'hello':
                 print "got message from pin named 'hello':", msg
 
