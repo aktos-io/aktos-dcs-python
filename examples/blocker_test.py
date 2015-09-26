@@ -17,12 +17,12 @@ class Ponger(Actor):
 class Pinger(Actor):
     def action(self):
         print "pinger is sending msg", time.time()
-        self.ask({'PongMessage': {'text': "Hello pinger!"}})
+        self.ask({'PongMessage': {'text': "Hello pinger!"}}, to='foo')
         print "pinger is continuing", time.time()
 
 
 
 if __name__ == "__main__":
     Pinger()
-    Ponger()
+    Ponger(name="foo")
     wait_all()

@@ -89,7 +89,7 @@ class ActorBase(gevent.Greenlet):
             handler = self.handle_functions.get("handle_" + subject, self.receive)
             #handler(msg)
             try:
-                assert msg['asked']
+                assert msg['asked'] in ['anyone', self.actor_id, self.actor_name]
                 gevent.spawn(self.blocker_handler, handler, msg)
             except:
                 gevent.spawn(handler, msg)
@@ -144,10 +144,10 @@ class ActorBase(gevent.Greenlet):
         # give control to another greenlet
         #gevent.sleep()
 
-    def ask(self, msg):
+    def ask(self, msg, to='anyone'):
         msg_id = self.get_msg_id()
         msg = envelp(msg, msg_id)
-        msg['asked'] = True
+        msg['asked'] = to
         self.send_raw(msg)
         self.block = True
         self.waiting_msg = msg_id
@@ -155,12 +155,12 @@ class ActorBase(gevent.Greenlet):
             gevent.sleep(0.000001)
 
 class Actor(ActorBase):
-    def __init__(self):
+    def __init__(self, name=None):
         ActorBase.__init__(self)
         self.mgr = ActorManager()
         self.mgr.register(self)
         self.broadcast_inbox = self.mgr.inbox.put
-
+        self.actor_name = name if name else self.actor_id
 
 class Singleton(type):
     """
