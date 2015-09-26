@@ -98,8 +98,7 @@ class ActorBase(gevent.Greenlet):
         orig_handler(msg)
 
         reply_payload = {'CtrlMessage': {}}
-        reply_msg_id = self.get_msg_id()
-        reply_msg = envelp(reply_payload, reply_msg_id)
+        reply_msg = envelp(reply_payload, self.get_msg_id())
         reply_msg['reply_for'] = msg['msg_id']
         self.send_raw(reply_msg)
 
@@ -192,10 +191,6 @@ class ActorManager(ActorBase):
         self.actors = []
         self.actor_inboxes = []
 
-        #gevent.signal(signal.SIGINT, self.manager_cleanup)
-        #gevent.signal(signal.SIGTERM, self.manager_cleanup)
-
-
     def receive(self, msg):
         #start_time = time.time()
         for inbox in [i[1] for i in self.actor_inboxes if i[0] not in msg['sender']]:
@@ -206,13 +201,8 @@ class ActorManager(ActorBase):
         self.actors.append(actor_instance)
         self.actor_inboxes.append([actor_instance.actor_id, actor_instance.inbox.put])
 
-    """
-    def manager_cleanup(self):
-        print "manager cleanup!"
-        for actor in self.actors:
-            actor.cleanup()
-
-    """
+    def dispatch_msg(self, msg):
+        gevent.spawn(self.receive, msg)
 
 if __name__ == "__main__":
     # TODO: add tests here
