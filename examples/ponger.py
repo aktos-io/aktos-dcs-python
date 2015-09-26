@@ -5,7 +5,7 @@ from aktos_dcs import *
 
 class Ponger(Actor):
     def handle_PongMessage(self, msg):
-        body = msg_body(msg)
+        body = get_msg_body(msg)
         print "Ponger got pong message:", body['text'], (time.time() - msg['timestamp'])
         sleep(2)
         self.send({'PingMessage': {'text': "Hello pinger, this is ponger 1!"}})

@@ -9,7 +9,7 @@ class Pinger(Actor):
         self.min_latency = 9999
 
     def handle_PingMessage(self, msg):
-        body = msg_body(msg)
+        body = get_msg_body(msg)
         latency = time.time() - msg['timestamp']
         if self.max_latency < latency:
             self.max_latency = latency

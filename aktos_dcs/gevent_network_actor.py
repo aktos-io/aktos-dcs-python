@@ -238,7 +238,7 @@ class ProxyActor(Actor):
         self.broker_send(self.introduction_msg)
 
     def handle_ProxyActorMessage(self, msg_raw):
-        msg = msg_body(msg_raw)
+        msg = get_msg_body(msg_raw)
         print "CM delay: ", (time.time() - msg_raw['timestamp'])
         if 'new_contact_list' in msg:
             print "got new contact list, merging and redistributing..."

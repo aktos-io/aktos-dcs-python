@@ -5,7 +5,7 @@ from aktos_dcs import *
 
 class Pinger(Actor):
     def handle_PingMessage(self, msg):
-        body = msg_body(msg)
+        body = get_msg_body(msg)
         print "Pinger got ping message: ", body['text'], (time.time() - msg['timestamp'])
         sleep(2)
         self.send({'PongMessage': {'text': "Hello ponger, this is pinger 1!"}})

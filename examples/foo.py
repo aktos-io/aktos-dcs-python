@@ -7,7 +7,7 @@ from aktos_dcs import *
 
 class Foo(Actor):
     def handle_FooMessage(self, msg):
-        msg = msg_body(msg)
+        msg = get_msg_body(msg)
         print "Foo got FooMessage: ", msg['text']
         sleep(1)
         self.send({'BarMessage': {'text': "Hello bar, this is foo from cca!"}})
