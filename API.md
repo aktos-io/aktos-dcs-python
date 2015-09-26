@@ -18,6 +18,6 @@ msg: Dictionary.
 
 ## actor.ask(msg [, to=target_actor_id_or_name])
 
-    like `actor.send`, but blocker.
+Works like `actor.send`, but this is blocker.
 
 
