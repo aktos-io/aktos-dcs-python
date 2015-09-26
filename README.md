@@ -2,7 +2,7 @@
 
 **aktos_dcs** is designed for creating **fault tolerant**, **realtime**, **massively concurrent**, **distributed** (even behind firewalls), **io-bound** (eg. heavy-traffic web server), **scalable** (both vertically and horizontally), **cross-platform** and **language agnostic** applications.
 
-This library is developed for distributed automation projects in mind. Any PLC or motion controller related work (including [HMI and SCADA](https://en.wikipedia.org/wiki/SCADA)) can be performed easily. Simulation of a real component of the target system becomes a trivial work to do. Graphical User Interface can be built by using desktop and mobile frameworks (Qt, GTK, ...) or by web technologies (HTML5, Javascript, CSS, ...). 
+This library is developed for distributed automation projects in mind. Any PLC or motion controller related work (including [HMI and SCADA](https://github.com/ceremcem/aktos-website)) can be performed easily. Simulation of a real component of the target system becomes a trivial work to do. Graphical User Interface can be built by using desktop and mobile frameworks (Qt, GTK, ...) or by web technologies (HTML5, Javascript, CSS, ...). 
 
 Message transport layer is built on top of ZeroMQ library, which has [Python][4], [Java][2], [Node.js][5], [C][3], [C++][6] , [C#][1] and [many other bindings][7]. This means, any number of these languages can be used together to build a single project. Developers can work with their favourite language. 
 
@@ -15,21 +15,6 @@ Message transport layer is built on top of ZeroMQ library, which has [Python][4]
 [7]: http://zeromq.org/bindings:_start
 
 Gevent based actor model (inspired from Erlang) is used for concurrency. This means, [concurrency comes for free](http://www.projectcalico.org/the-sharp-edges-of-gevent/). Since there are no real threads or subprocesses, debugging is easy. N-to-N connections are managed out of the box, so there is no single point of failure exists. 
-
-For a short tutorial, see [TESTS.md](./TESTS.md). 
-
-## Other Examples
-
-1. Serial port usage example: https://github.com/ceremcem/aktos-dcs-pyserial-example
-2. WEB UI example: https://github.com/ceremcem/aktos-dcs-webui-example
-3. aktos-dcs-lib-cca: https://github.com/ceremcem/aktos-dcs-lib-cca
-4. aktos-website: https://github.com/ceremcem/aktos-website
-
-## Other Implementations
-
-1. Java: https://github.com/Canburakt/aktos-dcs-java
-2. Node.js (in LiveScript): https://github.com/ceremcem/aktos-website/tree/master/app/modules/aktos-dcs
-
 
 ## Distributed coding
 
@@ -47,25 +32,17 @@ Should work on any platform, tested on:
 * Windows (XP, 7, 8.1)
 * Linux (Debian, Ubuntu, Raspbian)
 
-## Install 
+## Examples
 
-This library depends on `gevent 1.x`, `libzmq 4.x`, `netifaces`, `ujson`
+1. [TESTS.md](./TESTS.md) can be considered as a short tutorial. 
+2. Serial port usage example: https://github.com/ceremcem/aktos-dcs-pyserial-example
+3. aktos-dcs-lib-cca: https://github.com/ceremcem/aktos-dcs-lib-cca
+4. aktos-website as the scada infrastructure: https://github.com/ceremcem/aktos-website
 
-#### Windows: 
+## Other Implementations
 
-* install [Python 2.7.x](https://www.python.org/downloads/)
-* install http://aka.ms/vcpython27
-* clone or download aktos-dcs
-* run (double click on) "aktos-dcs\\install-on-windows.cmd 
-
-#### Linux:
-
-* clone or download aktos-dcs
-* `$ cd aktos-dcs && sudo install-on-linux.sh` (compilations may take about 3-5 minutes)
-
-## Guides for further implementations
-
-See:  [Developer Guide](./Developer-guide.md)
+1. Java: https://github.com/Canburakt/aktos-dcs-java
+2. Node.js (in LiveScript): https://github.com/ceremcem/aktos-website/tree/master/app/modules/aktos-dcs
 
 ## Recommended Tools and Libraries
 
@@ -73,6 +50,26 @@ See:  [Developer Guide](./Developer-guide.md)
 * https://github.com/ceremcem/link-with-server : for easy proxy connection of iot devices
 * https://github.com/ceremcem/aktos-dcs-lib-cca: library for automation projects 
 * https://github.com/ceremcem/aktos-website: Webui Scada system example including web framework
+
+## Install 
+
+Compilations may take around 3 minutes. 
+
+#### Windows: 
+
+* install [Python 2.7.x](https://www.python.org/downloads/)
+* install http://aka.ms/vcpython27
+* clone or download aktos-dcs
+* run (double click on) "`aktos-dcs\`[install-on-windows.cmd](./install-on-windows.cmd) 
+
+#### Linux:
+
+* clone or download aktos-dcs
+* `$ cd aktos-dcs && sudo `[install-on-linux.sh](./install-on-linux.sh) 
+
+## Guides for further implementations
+
+See:  [Developer Guide](./Developer-guide.md)
 
 ## Similar Projects
 
