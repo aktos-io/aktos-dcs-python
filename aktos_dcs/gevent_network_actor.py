@@ -415,9 +415,6 @@ class ProxyActor(Actor):
                 print "filter process started...", msg
                 gevent.sleep()
 
-            # TODO: Remove this, this is just a workaround for windows
-            gevent.sleep()
-
             msg_filtered = None
             msg_timeout = 5
             if self.actor_id in msg['sender']:
