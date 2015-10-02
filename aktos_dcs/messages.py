@@ -2,7 +2,13 @@ import time
 import uuid
 import copy
 #import msgpack
-import ujson as json
+try:
+    import ujson as json
+except ImportError:
+    try:
+        import simplejson as json
+    except ImportError:
+        import json
 
 # message functions
 def unpack(message):
