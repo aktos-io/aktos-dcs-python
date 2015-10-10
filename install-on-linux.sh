@@ -26,4 +26,4 @@ apt-get install -y libzmq3-dev || {
 	echo; 
 	echo "After installation, press enter to continue..."; read -p "Press Enter to continue";
 	 }
-pip install -r requirements.txt
+pip install -U -r requirements.txt
