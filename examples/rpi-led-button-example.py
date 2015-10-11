@@ -18,6 +18,14 @@ class Test(Actor):
             val = not val
 
 if __name__ == "__main__":
+    """
+    electrical connection:
+        led.+       : rpi.gpio.2
+        led.-       : rpi.gnd
+        button.a    : rpi.gnd
+        button.b    : rpi.gpio.3
+    """
+
     output_pins = {
         'test-output-1': 2,
     }
@@ -31,11 +39,8 @@ if __name__ == "__main__":
     for k, v in output_pins.items():
         GPIOOutputActor(pin_name=k, pin_number=v, initial=True)
 
+    ProxyActor()
     Test()
 
-    try:
-        wait_all()
-    except:
-        print "CLEANIN UP!"
-        import RPi.GPIO as g
-        g.cleanup()
+    wait_all()
+
