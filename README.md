@@ -48,7 +48,7 @@ Should work on any platform, tested on:
 
 * https://github.com/ceremcem/aktos-dcs-tools : for easy remote development 
 * https://github.com/ceremcem/link-with-server : for easy proxy connection of iot devices
-* https://github.com/ceremcem/aktos-dcs-lib-cca: library for automation projects 
+* https://github.com/ceremcem/aktos-dcs-lib: library for automation projects 
 * https://github.com/ceremcem/aktos-website: Webui Scada system example including web framework
 
 ## Install 
