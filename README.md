@@ -2,7 +2,7 @@
 
 **aktos_dcs** is designed for creating **fault tolerant**, **realtime**, **massively concurrent**, **distributed** (even behind firewalls), **io-bound** (eg. heavy-traffic web server), **scalable** (both vertically and horizontally), **cross-platform** and **language agnostic** applications.
 
-This library is developed for distributed automation projects in mind. Any PLC or motion controller related work (including [HMI and SCADA](https://github.com/ceremcem/aktos-website)) can be performed easily. Simulation of a real component of the target system becomes a trivial work to do. Graphical User Interface can be built by using desktop and mobile frameworks (Qt, GTK, ...) or by web technologies (HTML5, Javascript, CSS, ...). 
+This library is developed for distributed automation projects in mind. Any PLC or motion controller related work (including [HMI and SCADA](https://github.com/ceremcem/aktos-scada)) can be performed easily. Simulation of a real component of the target system becomes a trivial work to do. Graphical User Interface can be built by using desktop and mobile frameworks (Qt, GTK, ...) or by web technologies (HTML5, Javascript, CSS, ...). 
 
 Message transport layer is built on top of ZeroMQ library, which has [Python][4], [Java][2], [Node.js][5], [C][3], [C++][6] , [C#][1] and [many other bindings][7]. This means, any number of these languages can be used together to build a single project. Developers can work with their favourite language. 
 
@@ -37,7 +37,7 @@ Should work on any platform, tested on:
 1. [TESTS.md](./TESTS.md) can be considered as a short tutorial. 
 2. Serial port usage example: https://github.com/ceremcem/aktos-dcs-pyserial-example
 3. aktos-dcs-lib-cca: https://github.com/ceremcem/aktos-dcs-lib-cca
-4. aktos-website as the scada infrastructure: https://github.com/ceremcem/aktos-website
+4. aktos-scada as the SCADA and HMI infrastructure: https://github.com/ceremcem/aktos-scada
 
 ## Other Implementations
 
@@ -49,7 +49,7 @@ Should work on any platform, tested on:
 * https://github.com/ceremcem/aktos-dcs-tools : for easy remote development 
 * https://github.com/ceremcem/link-with-server : for easy proxy connection of iot devices
 * https://github.com/ceremcem/aktos-dcs-lib: library for automation projects 
-* https://github.com/ceremcem/aktos-website: Webui Scada system example including web framework
+* https://github.com/ceremcem/aktos-scada: Web based SCADA system which is live at https://aktos-elektronik.com
 
 ## Install 
 
