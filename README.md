@@ -31,6 +31,7 @@ Should work on any platform, tested on:
 
 * Windows (XP, 7, 8.1)
 * Linux (Debian, Ubuntu, Raspbian)
+* Os X (El capitan tested) 
 
 ## Examples
 
@@ -66,6 +67,13 @@ Compilations may take around 3 minutes.
 
 * clone or download aktos-dcs
 * `$ cd aktos-dcs && sudo `[install-on-linux.sh](./install-on-linux.sh) 
+
+
+#### Os X - El Capitan:
+
+* Requires [homebrew](http://brew.sh/) if it's not installed already. 
+* clone or download aktos-dcs
+* `$ cd aktos-dcs && sudo `[install-on-osx.sh](./install-on-osx.sh) 
 
 ## Guides for further implementations
 
