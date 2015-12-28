@@ -63,4 +63,6 @@ So, a full message should look like this:
 8. See that messages are not dropped because of they are too old, but they are dropped because they are duplicates. 
 9. Append a sequence number to `msg_id` field value. 
 10. See messages are reaching `ponger.py` correctly. 
-11. Get `ponger.py`'s answers. 
+11. Listen for `ponger.py`'s answers. 
+12. Move the listener (the subscriber) to a different thread (or `BackgroundWorker`). 
+13. Create `msg_id`s and `sender` id randomly. 
