@@ -13,7 +13,7 @@ import signal
 from gevent.hub import GreenletExit
 
 class ActorBase(gevent.Greenlet):
-    DEBUG_NETWORK_MESSAGES = True
+    DEBUG_NETWORK_MESSAGES = False
     DEBUG_INNER_MESSAGES = False
 
     def __init__(self, start_on_init=True):
