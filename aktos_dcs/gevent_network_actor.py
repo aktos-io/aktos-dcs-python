@@ -331,13 +331,19 @@ class ProxyActor(Actor):
     def broker_all_receive(self, message, caller=''):
         if caller:
             if self.DEBUG_NETWORK_MESSAGES:
-                print caller, " received msg..."
+                print caller, " received msg...", message
             pass
 
         #print "proxy actor got message: ", message
 
         try:
-            msg_r = unpack(message)
+            try: 
+                msg_r = unpack(message)
+            except Exception as e:
+                if self.DEBUG_NETWORK_MESSAGES:
+                    print "unpacking is failed: ", e.message
+                    print "orig message: ", repr(message)
+                raise 
 
             msg_r = self.filter_msg(msg_r)
             if msg_r:
@@ -350,8 +356,9 @@ class ProxyActor(Actor):
                 self.broker_send(msg_r)
                 self.client_send(msg_r)
                 self.server_send(msg_r)
-        except:
-            pass
+        except Exception as e:
+            if self.DEBUG_NETWORK_MESSAGES:
+                print caller, " received message but error occured: ", e.message
 
     def server_send(self, msg_raw):
         self.add_sender_to_msg(msg_raw)
@@ -406,7 +413,7 @@ class ProxyActor(Actor):
             self.mgr.inbox.put(msg_raw)
 
     def filter_msg(self, msg):
-        # NOTE: THIS FUNCTION SHOULD BE CALL ONLY ONCE
+        # NOTE: THIS FUNCTION SHOULD BE CALLED ONLY ONCE PER MESSAGE
         # (CAN NOT BE CHAINED IN FUNCTIONS). ELSE,
         # ERRONEOUS DUPLICATE MESSAGE EVENT WILL OCCUR
         try:
