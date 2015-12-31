@@ -26,12 +26,6 @@ Payload is basically in `{'Subject': data}` format. Here are some examples:
     LiveScript:
     
         msg = IoMessage: pin_name: \green-led, val: on
-
-        or 
-        
-        msg = IoMessage: 
-               pin_name: \green-led
-               val: on 
           
     
 So, a full message should look like this:
@@ -39,7 +33,9 @@ So, a full message should look like this:
     {"sender":["5fa6c6d7-077a-4467-9bb3-1f2c2ee58d78","5e7b8786-4885-4e2d-b4c6-98dc21856ba9","3444aadc-ed01-4ce6-94bc-ae144510eb31","41dl-Gj3"],"timestamp":1440885632.49,"msg_id":"5fa6c6d7-077a-4467-9bb3-1f2c2ee58d78.147","payload":{"IoMessage":{"pin_name":"green-led","val":true}}}
 
 
-# Example C# Implementation Pattern 
+# Example C# Implementation History 
+
+These steps are followed while implementing [C# port of this library](https://github.com/ceremcem/aktos-dcs-cs): 
 
 1. Create an application that can send and receive strings (eg. 'Hello' and 'Hello back!') via ZeroMQ .
 2. Install [aktos-dcs](https://github.com/ceremcem/aktos-dcs). 
