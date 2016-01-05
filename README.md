@@ -1,4 +1,6 @@
-#Python bindings for Distributed Control System Library
+#Python bindings for Distributed Control System Library 
+
+[![Coverage Status](https://coveralls.io/repos/ceremcem/aktos-dcs/badge.svg?branch=master&service=github)](https://coveralls.io/github/ceremcem/aktos-dcs?branch=master)
 
 **aktos_dcs** is designed for creating **fault tolerant**, **realtime**, **massively concurrent**, **distributed** (even behind firewalls), **io-bound** (eg. heavy-traffic web server), **scalable** (both vertically and horizontally), **cross-platform** and **language agnostic** applications.
 
