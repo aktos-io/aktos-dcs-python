@@ -12,13 +12,12 @@ from gevent.lock import Semaphore
 import signal
 from gevent.hub import GreenletExit
 
-class ActorBase(gevent.Greenlet):
+class ActorBase(object):
     DEBUG_NETWORK_MESSAGES = False
     DEBUG_INNER_MESSAGES = False
 
     def __init__(self, start_on_init=True):
         self.inbox = Queue()
-        gevent.Greenlet.__init__(self)
         gevent.signal(signal.SIGTERM, self.__cleanup)
         gevent.signal(signal.SIGINT, self.__cleanup)
 
@@ -42,6 +41,9 @@ class ActorBase(gevent.Greenlet):
             if f[0].startswith("handle_"):
                 #print "this is handle funct: ", f
                 self.handle_functions[f[0]] = f[1]
+
+    def start(self):
+        gevent.spawn(self._run)
 
     def __cleanup(self, *args, **kwargs):
         #print "cleaning up!"
