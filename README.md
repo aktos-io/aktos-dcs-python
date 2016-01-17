@@ -39,6 +39,7 @@ Should work on any platform, tested on:
 2. Serial port usage example: https://github.com/ceremcem/aktos-dcs-pyserial-example
 3. aktos-dcs-lib: https://github.com/ceremcem/aktos-dcs-lib
 4. aktos-scada as the SCADA and HMI infrastructure: https://github.com/ceremcem/aktos-scada
+5. Qt desktop application: https://github.com/ceremcem/weighing-machine-testing
 
 ## Other Implementations
 
