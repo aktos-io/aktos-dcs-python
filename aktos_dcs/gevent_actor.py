@@ -43,7 +43,7 @@ class ActorBase(object):
                 self.handle_functions[f[0]] = f[1]
 
     def start(self):
-        gevent.spawn(self._run)
+        self.main_greenlet = gevent.spawn(self._run)
 
     def __cleanup(self, *args, **kwargs):
         #print "cleaning up!"
@@ -51,7 +51,7 @@ class ActorBase(object):
         self.cleanup()
 
         # TODO: kill properly!
-        self.kill()
+        self.main_greenlet.kill()
         #print "args", args, kwargs
         raise GreenletExit
 
