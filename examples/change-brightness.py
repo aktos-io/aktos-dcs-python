@@ -4,13 +4,11 @@ from aktos_dcs import *
 
 class Test(Actor):
     def handle_IoMessage(self, msg):
-        msg_body = get_msg_body(msg)
-
-        if msg_body["pin_name"] == "izmirhs-brightness":
+        if msg["pin_name"] == "izmirhs-brightness":
             with open("/sys/class/backlight/radeon_bl0/brightness", 'w') as f:
-                f.write(msg_body["val"])
+                f.write(msg["val"])
 
-        print("Got message: %s", msg_body["val"])
+        print("Got message: %s", msg["val"])
 
 
 if __name__ == "__main__":

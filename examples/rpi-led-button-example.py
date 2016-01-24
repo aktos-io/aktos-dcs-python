@@ -5,9 +5,7 @@ from aktos_dcs_lib import *
 
 class Test(Actor):
     def handle_IoMessage(self, msg):
-        msg_body = get_msg_body(msg)
-
-        print("Got message: %s", msg_body["val"])
+        print("Got message: %s", msg["val"])
 
     def action(self):
         val = False

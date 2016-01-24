@@ -90,11 +90,15 @@ class ActorBase(object):
 
             handler = self.handle_functions.get("handle_" + subject, self.receive)
             #handler(msg)
+            if handler != self.receive:
+                msg_single = msg["payload"][subject]
+            else:
+                msg_single = msg
             try:
                 assert msg['asked'] in ['anyone', self.actor_id, self.actor_name]
-                gevent.spawn(self.blocker_handler, handler, msg)
+                gevent.spawn(self.blocker_handler, handler, msg_single)
             except:
-                gevent.spawn(handler, msg)
+                gevent.spawn(handler, msg_single)
 
     def blocker_handler(self, orig_handler, msg):
         orig_handler(msg)

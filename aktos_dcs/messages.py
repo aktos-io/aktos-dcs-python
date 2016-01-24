@@ -33,5 +33,8 @@ def msg_body(msg):
     return get_msg_body(msg)
 
 def get_msg_body(msg):
-    return msg['payload'].values()[0]
+    try:
+        return msg['payload'].values()[0]
+    except:
+        return msg
 
