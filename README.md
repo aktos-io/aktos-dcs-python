@@ -68,14 +68,14 @@ Compilations may take around 3 minutes.
 #### Linux:
 
 * clone or download aktos-dcs
-* `$ cd aktos-dcs && sudo `[install-on-linux.sh](./install-on-linux.sh) 
+* `$ cd aktos-dcs && sudo `[./install-on-linux.sh](./install-on-linux.sh) 
 
 
 #### Os X - El Capitan:
 
 * Requires [homebrew](http://brew.sh/) if it's not installed already. 
 * clone or download aktos-dcs
-* `$ cd aktos-dcs && sudo `[install-on-osx.sh](./install-on-osx.sh) 
+* `$ cd aktos-dcs && `[./install-on-osx.sh](./install-on-osx.sh) 
 
 ## Guides for further implementations
 
