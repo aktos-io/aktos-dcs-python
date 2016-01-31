@@ -45,6 +45,9 @@ class ActorBase(object):
     def start(self):
         self.main_greenlet = gevent.spawn(self._run)
 
+    def kill(self, *args, **kwargs):
+        self.__cleanup()
+
     def __cleanup(self, *args, **kwargs):
         #print "cleaning up!"
         self.running = False
@@ -53,7 +56,7 @@ class ActorBase(object):
         # TODO: kill properly!
         self.main_greenlet.kill()
         #print "args", args, kwargs
-        raise GreenletExit
+        #raise GreenletExit
 
     def get_msg_id(self):
         msg_id = '.'.join([self.actor_id, str(self.msg_serial)])
