@@ -53,10 +53,12 @@ class ActorBase(object):
         self.running = False
         self.cleanup()
 
-        # TODO: kill properly!
+        self.action_greenlet.kill()
+        self.get_message_greenlet.kill()
         self.main_greenlet.kill()
-        #print "args", args, kwargs
-        #raise GreenletExit
+
+        raise GreenletExit
+
 
     def get_msg_id(self):
         msg_id = '.'.join([self.actor_id, str(self.msg_serial)])
@@ -120,9 +122,9 @@ class ActorBase(object):
                 self.dispatch_msg(msg)
                 gevent.sleep(0)
 
-        gevent.spawn(self.action)
-        gevent.spawn(get_message)
-        while True:
+        self.action_greenlet = gevent.spawn(self.action)
+        self.get_message_greenlet = gevent.spawn(get_message)
+        while self.running:
             gevent.sleep(99999)
 
     def send(self, msg):

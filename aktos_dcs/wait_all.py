@@ -3,8 +3,8 @@ __author__ = 'ceremcem'
 import gevent
 
 def wait_all():
-    try:
-        while True:
+    while True:
+        try:
             gevent.sleep(9999999999)
-    except:
-        pass
+        except:
+            break
