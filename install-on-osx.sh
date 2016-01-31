@@ -1,10 +1,5 @@
 #!/bin/bash 
 
-if [[ $(id -u) > 0 ]]; then 
-	echo "this tool needs root privileges"
-        sudo $0
-        exit
-fi
 
 brew update
 
@@ -15,10 +10,10 @@ brew update
 # most likely do this for new pip.
 # python-dev also comes default with Os X.
 
-#if ! hash pip; then
-#	echo "python-pip is needed..."
-#	apt-get install -y python-pip
-#fi
+if ! hash pip; then
+	echo "python-pip is needed..."
+    sudo easy_install pip
+fi
 
 # zeromq is a bottled package comes along with headers & sources linux counterpart as libzmq*-dev
 brew install libpgm
@@ -34,4 +29,4 @@ brew install zeromq || {
 	echo; 
 	echo "After installation, press enter to continue..."; read -p "Press Enter to continue";
 	 }
-pip install -U -r requirements.txt
+sudo pip install -U -r requirements.txt
