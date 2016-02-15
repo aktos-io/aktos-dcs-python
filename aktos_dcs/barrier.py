@@ -1,15 +1,23 @@
 __author__ = 'ceremcem'
 
 
-from gevent.queue import Queue
-
+import gevent
 
 class Barrier(object):
     def __init__(self):
-        self.q = Queue()
+        self.barrier_closed = True
+
+    def wait(self):
+        self.wait_answer()
+
+    def go(self, msg=None):
+        self.answer(msg)
 
     def wait_answer(self):
-        return self.q.get()
+        self.barrier_closed = True
+        while self.barrier_closed:
+            gevent.sleep(0.0001)
 
-    def answer(self, msg):
-        self.q.put(msg)
+    def answer(self, msg=None):
+        self.barrier_closed = False
+

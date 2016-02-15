@@ -11,6 +11,7 @@ from messages import *
 from gevent.lock import Semaphore
 import signal
 from gevent.hub import GreenletExit
+import re
 
 class ActorBase(object):
     DEBUG_NETWORK_MESSAGES = False
@@ -35,12 +36,20 @@ class ActorBase(object):
         self.sem = Semaphore()
         #atexit.register(self.__cleanup)
 
+        self.action_funcs = []
+        action_funcs_pattern = re.compile("^action_?[0-9]*$")
+
         functions = inspect.getmembers(self, predicate=inspect.ismethod)
+
         self.handle_functions = {}
         for f in functions:
             if f[0].startswith("handle_"):
                 #print "this is handle funct: ", f
                 self.handle_functions[f[0]] = f[1]
+
+            if action_funcs_pattern.match(f[0]):
+                self.action_funcs.append(f[1])
+
 
     def start(self):
         self.main_greenlet = gevent.spawn(self._run)
@@ -53,7 +62,8 @@ class ActorBase(object):
         self.running = False
         self.cleanup()
 
-        self.action_greenlet.kill()
+        for i in self.action_greenlets:
+            i.kill()
         self.get_message_greenlet.kill()
         self.main_greenlet.kill()
 
@@ -122,7 +132,12 @@ class ActorBase(object):
                 self.dispatch_msg(msg)
                 gevent.sleep(0)
 
-        self.action_greenlet = gevent.spawn(self.action)
+        # fire actions
+        self.action_greenlets = []
+        for i in self.action_funcs:
+            self.action_greenlets.append(gevent.spawn(i))
+
+        # fire message receiver
         self.get_message_greenlet = gevent.spawn(get_message)
         while self.running:
             gevent.sleep(99999)
@@ -139,7 +154,7 @@ class ActorBase(object):
         # TODO: Fix this: this little delay is to be able to
         # send messages one after the other
         #
-        # without this dela, following code is not working:
+        # without this delay, following code is not working:
         #
         #      the_actor.send({'a': 'message'})
         #      the_actor.send({'a': 'different message'})
