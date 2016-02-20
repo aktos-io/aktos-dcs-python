@@ -10,14 +10,25 @@ class Barrier(object):
     def wait(self):
         self.wait_answer()
 
-    def go(self, msg=None):
-        self.answer(msg)
+    def go(self):
+        self.answer()
 
-    def wait_answer(self):
-        self.barrier_closed = True
-        while self.barrier_closed:
-            gevent.sleep(0.0001)
+    def wait_answer(self, timeout=None):
+        t = gevent.Timeout(timeout)
+        success = False
+        try:
+            t.start()
+            self.barrier_closed = True
+            while self.barrier_closed:
+                gevent.sleep(0.0001)
+            success = True
+        except:
+            success = False
+        finally:
+            t.cancel()
 
-    def answer(self, msg=None):
+        return success
+
+    def answer(self):
         self.barrier_closed = False
 

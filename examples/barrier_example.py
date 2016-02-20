@@ -15,16 +15,18 @@ class A(Actor):
 class Middle(Actor):
     def action(self):
         self.sensor_reply = Barrier()
+        self.real_temp = None
 
     def handle_HowHotIsIt(self, msg):
         print "got temperature question, asking to temp sensor"
         self.send({'TemperatureSensor': {}})
-        reply = self.sensor_reply.wait_answer()
-        print "got real answer: ", reply["degree"]
-        self.send({'ReHowHotIsIt': {'temp': reply['degree']}})
+        self.sensor_reply.wait_answer()
+        print "got real answer: ", self.real_temp
+        self.send({'ReHowHotIsIt': {'temp': self.real_temp}})
 
     def handle_TemperatureSensorMessage(self, msg):
-        self.sensor_reply.answer(msg)
+        self.real_temp = msg["degree"]
+        self.sensor_reply.go()
 
 class TempSensor(Actor):
     def action(self):
@@ -37,7 +39,7 @@ class TempSensor(Actor):
         self.i += 1
 
 
-A()
-Middle()
-TempSensor()
+A() # asks for current temperature
+Middle() # gets real measurement from TempSensor, passes that value to A
+TempSensor() # measures real temperature
 wait_all()
