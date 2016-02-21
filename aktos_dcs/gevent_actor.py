@@ -18,6 +18,7 @@ class ActorBase(object):
     DEBUG_INNER_MESSAGES = False
 
     def __init__(self, start_on_init=True):
+        self.prepare()
         self.inbox = Queue()
         gevent.signal(signal.SIGTERM, self.__cleanup)
         gevent.signal(signal.SIGINT, self.__cleanup)
@@ -50,6 +51,13 @@ class ActorBase(object):
             if action_funcs_pattern.match(f[0]):
                 self.action_funcs.append(f[1])
 
+    def prepare(self):
+        """
+        Prepare objects before using them
+
+        Define in your class
+        """
+        pass
 
     def start(self):
         self.main_greenlet = gevent.spawn(self._run)
@@ -94,12 +102,6 @@ class ActorBase(object):
         pass
 
     def dispatch_msg(self, msg):
-        try:
-            assert msg['reply_for'] == self.waiting_msg
-            self.block = False
-        except:
-            pass
-
         for subject in msg['payload']:
             #self.handle_functions.get("handle_" + subject, self.receive)(msg)
 
@@ -109,19 +111,7 @@ class ActorBase(object):
                 msg_single = msg["payload"][subject]
             else:
                 msg_single = msg
-            try:
-                assert msg['asked'] in ['anyone', self.actor_id, self.actor_name]
-                gevent.spawn(self.blocker_handler, handler, msg_single)
-            except:
-                gevent.spawn(handler, msg_single)
-
-    def blocker_handler(self, orig_handler, msg):
-        orig_handler(msg)
-
-        reply_payload = {'CtrlMessage': {}}
-        reply_msg = envelp(reply_payload, self.get_msg_id())
-        reply_msg['reply_for'] = msg['msg_id']
-        self.send_raw(reply_msg)
+            gevent.spawn(handler, msg_single)
 
     def _run(self):
         self.running = True
@@ -170,16 +160,6 @@ class ActorBase(object):
         # give control to another greenlet
         #gevent.sleep()
 
-    def ask(self, msg, to='anyone'):
-        msg_id = self.get_msg_id()
-        msg = envelp(msg, msg_id)
-        msg['asked'] = to
-        self.send_raw(msg)
-        self.block = True
-        self.waiting_msg = msg_id
-        while self.block:
-            gevent.sleep(0.000001)
-
 
 class Actor(ActorBase):
     def __init__(self, name=None):
@@ -195,7 +175,7 @@ class Actor(ActorBase):
         except:
             if name.startswith("send_"):
                 msg_topic = name.split("_")[1]
-                print "Msg name: ", msg_topic
+                #print "Msg name: ", msg_topic
 
                 def msg_sender(self, *args, **kwargs):
                     m = {msg_topic: kwargs}

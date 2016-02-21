@@ -145,7 +145,7 @@ class ProxyActor(Actor):
         self.tx_port = tx_port
         self.contacts = DcsContactList()
         self.context = zmq.Context()
-        self.msg_history = []  # list of [msg_id, timestamp]
+        self.msg_history = {}  # list of [msg_id, timestamp]
         self.connection_list = []
         self.link = Link()
         self.link.broker.receiver = self.broker_sub_receiver
@@ -412,52 +412,56 @@ class ProxyActor(Actor):
             self.add_sender_to_msg(msg_raw)
             self.mgr.inbox.put(msg_raw)
 
+    def get_history_sequence(self, sender):
+        try:
+            return self.msg_history[sender]
+        except:
+            self.msg_history[sender] = -1
+            return self.get_history_sequence(sender)
+
     def filter_msg(self, msg):
         # NOTE: THIS FUNCTION SHOULD BE CALLED ONLY ONCE PER MESSAGE
         # (CAN NOT BE CHAINED IN FUNCTIONS). ELSE,
         # ERRONEOUS DUPLICATE MESSAGE EVENT WILL OCCUR
+        msg_filtered = None
         try:
             self.sem.acquire()
             if self.DEBUG_NETWORK_MESSAGES:
                 print "filter process started...", msg
                 gevent.sleep()
 
-            msg_filtered = None
-            msg_timeout = 5
-            if self.actor_id in msg['sender']:
+            sender, sequence = msg["msg_id"].split(".")
+            sequence = int(sequence)
+
+            if self.actor_id == sender:
                 if self.DEBUG_NETWORK_MESSAGES:
                     print "dropping short circuit message...", msg['msg_id']
                 #pprint(self.msg_history)
                 pass
-            elif msg['msg_id'] in [i[0] for i in self.msg_history]:
+            elif sequence == self.get_history_sequence(sender):
                 if self.DEBUG_NETWORK_MESSAGES:
                     print "dropping duplicate message...", msg['msg_id']
                 pass
-            elif msg['timestamp'] + msg_timeout < time.time():
-                print "dropping timeouted message (%d secs. old)" % (time.time() - msg['timestamp'])
+            elif sequence < self.get_history_sequence(sender):
+                if self.DEBUG_NETWORK_MESSAGES:
+                    print "dropping old message (last seq: %d, msg seq: %d)" % (self.get_history_sequence(sender), sequence)
             else:
-                self.msg_history.append(list([msg['msg_id'], msg['timestamp']]))
-                msg_filtered = msg
-
-                # Erase messages that will be filtered via "timeout" filter already
-                # TODO: find more efficient way to do this
-                if self.msg_history:
-                    if self.msg_history[0][1] + msg_timeout < time.time():
-                        del self.msg_history[0]
-
-                #self.msg_history = [i for i in self.msg_history if i[1] + msg_timeout > time.time()]
-
+                self.msg_history[sender] = sequence
                 if self.DEBUG_NETWORK_MESSAGES:
                     print "passed filter: ", msg['msg_id']
 
+                msg_filtered = msg
+
             if self.DEBUG_NETWORK_MESSAGES:
                 print "filter process done..."
+                print "msg history:", self.msg_history
 
-            self.sem.release()
-            return msg_filtered
         except Exception as e:
             print "DEBUG: unknown message: ", e.message, msg
-            return None
+        finally:
+            self.sem.release()
+            return msg_filtered
+
 
 
     def cleanup(self):
