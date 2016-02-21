@@ -180,6 +180,7 @@ class ActorBase(object):
         while self.block:
             gevent.sleep(0.000001)
 
+
 class Actor(ActorBase):
     def __init__(self, name=None):
         ActorBase.__init__(self)
@@ -187,6 +188,26 @@ class Actor(ActorBase):
         self.mgr.register(self)
         self.broadcast_inbox = self.mgr.inbox.put
         self.actor_name = name if name else self.actor_id
+
+    def __getattribute__(self, name):
+        try:
+            return object.__getattribute__(self, name)
+        except:
+            if name.startswith("send_"):
+                msg_topic = name.split("_")[1]
+                print "Msg name: ", msg_topic
+
+                def msg_sender(self, msg):
+                    print "sending msg topic: ", msg_topic
+                    m = {msg_topic: {}}
+                    print "whole message: ", m
+                    self.send(m)
+
+                import types
+                setattr(self, name, types.MethodType(msg_sender, self))
+                return object.__getattribute__(self, name)
+            else:
+                raise
 
 class Singleton(type):
     """
