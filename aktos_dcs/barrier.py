@@ -7,13 +7,14 @@ class Barrier(object):
     def __init__(self):
         self.barrier_closed = True
 
-    def wait(self):
-        self.wait_answer()
+    def wait_answer(self, timeout=None):
+        x = self.wait(timeout)
+        return x
 
     def go(self):
         self.answer()
 
-    def wait_answer(self, timeout=None):
+    def wait(self, timeout=None):
         t = gevent.Timeout(timeout)
         success = False
         try:
