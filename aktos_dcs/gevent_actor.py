@@ -197,10 +197,8 @@ class Actor(ActorBase):
                 msg_topic = name.split("_")[1]
                 print "Msg name: ", msg_topic
 
-                def msg_sender(self, msg):
-                    print "sending msg topic: ", msg_topic
-                    m = {msg_topic: {}}
-                    print "whole message: ", m
+                def msg_sender(self, *args, **kwargs):
+                    m = {msg_topic: kwargs}
                     self.send(m)
 
                 import types
