@@ -12,7 +12,7 @@ class Test(Actor):
         while True:
             sleep(2)
             print("sending value: %s" % val)
-            self.send({'IoMessage': {'pin_name': 'test-output-1', 'val': val}})
+            self.send_IoMessage(pin_name="test-output-1", val=val)
             val = not val
 
 if __name__ == "__main__":

@@ -4,14 +4,15 @@ __author__ = 'ceremcem'
 from aktos_dcs import *
 
 class Bar(Actor):
+    def action(self):
+        self.send_FooMessage(text="Hello foo, this is STARTUP MESSAGE!")
+
     def handle_BarMessage(self, msg):
         print "Bar got BarMessage: ", msg['text']
         sleep(1)
-        self.send({'FooMessage': {'text': "Hello foo, this is bar from cca!"}})
+        self.send_FooMessage(text="Hello foo, this is bar!")
 
 if __name__ == "__main__":
     ProxyActor()
-    bar = Bar()
-    bar.send({'FooMessage': {'text': "startup message from bar from cca..."}})
-
+    Bar()
     wait_all()

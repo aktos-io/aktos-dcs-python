@@ -6,7 +6,7 @@ class A(Actor):
     def action(self):
         while True:
             print "asking for temperature"
-            self.send({'HowHotIsIt': {}})
+            self.send_HowHotIsIt()
             sleep(5)
 
     def handle_ReHowHotIsIt(self, msg):
@@ -19,10 +19,10 @@ class Middle(Actor):
 
     def handle_HowHotIsIt(self, msg):
         print "got temperature question, asking to temp sensor"
-        self.send({'TemperatureSensor': {}})
+        self.send_TemperatureSensor()
         self.sensor_reply.wait_answer()
         print "got real answer: ", self.real_temp
-        self.send({'ReHowHotIsIt': {'temp': self.real_temp}})
+        self.send_ReHowHotIsIt(temp=self.real_temp)
 
     def handle_TemperatureSensorMessage(self, msg):
         self.real_temp = msg["degree"]
@@ -35,7 +35,7 @@ class TempSensor(Actor):
     def handle_TemperatureSensor(self, msg):
         print "sending simulated (and delayed) sensor message"
         sleep(2)
-        self.send({'TemperatureSensorMessage': {'degree': self.i}})
+        self.send_TemperatureSensorMessage(degree=self.i)
         self.i += 1
 
 
