@@ -18,7 +18,6 @@ class ActorBase(object):
     DEBUG_INNER_MESSAGES = False
 
     def __init__(self, start_on_init=True):
-        self.prepare()
         self.inbox = Queue()
         gevent.signal(signal.SIGTERM, self.__cleanup)
         gevent.signal(signal.SIGINT, self.__cleanup)
@@ -115,12 +114,7 @@ class ActorBase(object):
 
     def _run(self):
         self.running = True
-
-        def get_message():
-            while self.running:
-                msg = self.inbox.get()
-                self.dispatch_msg(msg)
-                gevent.sleep(0)
+        self.prepare()
 
         # fire actions
         self.action_greenlets = []
@@ -128,6 +122,11 @@ class ActorBase(object):
             self.action_greenlets.append(gevent.spawn(i))
 
         # fire message receiver
+        def get_message():
+            while self.running:
+                msg = self.inbox.get()
+                self.dispatch_msg(msg)
+                gevent.sleep(0)
         self.get_message_greenlet = gevent.spawn(get_message)
         while self.running:
             gevent.sleep(99999)

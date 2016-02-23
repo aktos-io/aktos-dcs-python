@@ -146,6 +146,8 @@ class ProxyActor(Actor):
         self.contacts = DcsContactList()
         self.context = zmq.Context()
         self.msg_history = {}  # list of [msg_id, timestamp]
+        self.passed_messages = {}
+
         self.connection_list = []
         self.link = Link()
         self.link.broker.receiver = self.broker_sub_receiver
@@ -414,10 +416,12 @@ class ProxyActor(Actor):
 
     def get_history_sequence(self, sender):
         try:
-            return self.msg_history[sender]
+            last_seq = self.msg_history[sender]
+            return last_seq
         except:
-            self.msg_history[sender] = -1
-            return self.get_history_sequence(sender)
+            no_msg = -1
+            self.msg_history[sender] = no_msg
+            return no_msg
 
     def filter_msg(self, msg):
         # NOTE: THIS FUNCTION SHOULD BE CALLED ONLY ONCE PER MESSAGE
@@ -433,7 +437,10 @@ class ProxyActor(Actor):
             sender, sequence = msg["msg_id"].split(".")
             sequence = int(sequence)
 
-            if self.actor_id == sender:
+            if self.DEBUG_NETWORK_MESSAGES:
+                print "sender, sequence: ", sender, sequence
+
+            if self.actor_id in msg["sender"]:
                 if self.DEBUG_NETWORK_MESSAGES:
                     print "dropping short circuit message...", msg['msg_id']
                 #pprint(self.msg_history)
@@ -449,7 +456,6 @@ class ProxyActor(Actor):
                 self.msg_history[sender] = sequence
                 if self.DEBUG_NETWORK_MESSAGES:
                     print "passed filter: ", msg['msg_id']
-
                 msg_filtered = msg
 
             if self.DEBUG_NETWORK_MESSAGES:
