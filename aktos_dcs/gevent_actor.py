@@ -36,12 +36,20 @@ class ActorBase(object):
         self.sem = Semaphore()
         #atexit.register(self.__cleanup)
 
+        # action functions, such as "action, action1, action2, ..., action999"
         self.action_funcs = []
         action_funcs_pattern = re.compile("^action_?[0-9]*$")
 
-        functions = inspect.getmembers(self, predicate=inspect.ismethod)
-
+        # handle functions, such as "handle_MyMessage"
         self.handle_functions = {}
+
+        # plc_loop functions, such as "plc_loop, plc_loop1, ..., plc_loop999"
+        self.plc_funcs = []
+        plc_funcs_pattern = re.compile("^plc_loop_?[0-9]*$")
+
+
+        # spawn automatic functions
+        functions = inspect.getmembers(self, predicate=inspect.ismethod)
         for f in functions:
             if f[0].startswith("handle_"):
                 #print "this is handle funct: ", f
@@ -49,6 +57,10 @@ class ActorBase(object):
 
             if action_funcs_pattern.match(f[0]):
                 self.action_funcs.append(f[1])
+
+            if plc_funcs_pattern.match(f[0]):
+                self.plc_funcs.append(f[1])
+
 
     def prepare(self):
         """
@@ -69,10 +81,17 @@ class ActorBase(object):
         self.running = False
         self.cleanup()
 
-        for i in self.action_greenlets:
-            i.kill()
-        self.get_message_greenlet.kill()
-        self.main_greenlet.kill()
+        try:
+            for i in self.plc_loop_greenlets:
+                i.kill()
+
+            for i in self.action_greenlets:
+                i.kill()
+
+            self.get_message_greenlet.kill()
+            self.main_greenlet.kill()
+        except:
+            print "Killed actor..."
 
         raise GreenletExit
 
@@ -112,6 +131,11 @@ class ActorBase(object):
                 msg_single = msg
             gevent.spawn(handler, msg_single)
 
+    def template_plc_loop(self, plc_loop_func):
+        while True:
+            plc_loop_func()
+            gevent.sleep(0.001)
+
     def _run(self):
         self.running = True
         self.prepare()
@@ -120,6 +144,11 @@ class ActorBase(object):
         self.action_greenlets = []
         for i in self.action_funcs:
             self.action_greenlets.append(gevent.spawn(i))
+
+        # fire plc_loops
+        self.plc_loop_greenlets = []
+        for i in self.plc_funcs:
+            self.plc_loop_greenlets.append(gevent.spawn(self.template_plc_loop, i))
 
         # fire message receiver
         def get_message():
