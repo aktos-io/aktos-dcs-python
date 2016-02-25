@@ -27,3 +27,9 @@ apt-get install -y libzmq3-dev || {
 	echo "After installation, press enter to continue..."; read -p "Press Enter to continue";
 	 }
 pip install -U -r requirements.txt
+
+PYTHON_MODULES="/usr/lib/python2.7"
+sudo cp -a aktos_dcs $PYTHON_MODULES
+sudo chown root:root "$PYTHON_MODULES/aktos_dcs" -R 
+sudo chmod 644 "$PYTHON_MODULES/aktos_dcs" -R 
+

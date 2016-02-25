@@ -5,12 +5,13 @@ import gevent
 import time
 
 class Barrier(object):
-    def __init__(self):
+    def __init__(self, warning=False):
         self.barrier_closed = True
         self.wait_answer = self.wait
         self.answer = self.go
         self.go_timestamp = 0
-        self.tolerance_before_wait = 0.1  # seconds
+        self.tolerance_before_wait = 0.01  # seconds
+        self.warning = warning
 
     def wait(self, timeout=None):
         self.timeout = timeout
@@ -22,19 +23,24 @@ class Barrier(object):
                     # timeout!
                     return False
 
-            if self.go_timestamp + self.tolerance_before_wait > time.time():
-                print "WARNING: Go signal has been gathered %f seconds before wait, but continuing anyway.." % (
-                    time.time() - self.go_timestamp
-                )
+            if self.go_timestamp + self.tolerance_before_wait >= time.time():
+                if self.warning:
+                    print "WARNING: Go signal has been gathered %f seconds before wait, but continuing anyway.." % (
+                        time.time() - self.go_timestamp
+                    )
                 break
+            else:
+                if self.warning:
+                    print "WARNING: Go signal has been gathered too long before wait, not continuing!"
+
             gevent.sleep(0.0001)
 
         return True
 
     def go(self):
         if not self.barrier_closed:
-            #print "WARNING: BARRIER IS SET TO GO BEFORE IT IS STARTED TO WAIT!!!"
-            pass
+            if self.warning:
+                print "WARNING: BARRIER IS SET TO GO BEFORE IT IS STARTED TO WAIT!!!"
         self.barrier_closed = False
         self.go_timestamp = time.time()
 
