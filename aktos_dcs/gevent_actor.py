@@ -12,6 +12,8 @@ from gevent.lock import Semaphore
 import signal
 from gevent.hub import GreenletExit
 import re
+from cca_signal import CcaSignalLoop
+from singleton import Singleton
 
 class ActorBase(object):
     DEBUG_NETWORK_MESSAGES = False
@@ -134,7 +136,8 @@ class ActorBase(object):
     def template_plc_loop(self, plc_loop_func):
         while True:
             plc_loop_func()
-            gevent.sleep(0.001)
+            CcaSignalLoop().loop_point()
+            gevent.sleep(0.01)
 
     def _run(self):
         self.running = True
@@ -215,23 +218,6 @@ class Actor(ActorBase):
             else:
                 raise
 
-class Singleton(type):
-    """
-    Usage example:
-
-        class my_singleton_class(some_other_class):
-            __metaclass__ = Singleton
-
-            ... class definition as usual
-
-    """
-    def __init__(self, *args, **kwargs):
-        super(Singleton, self).__init__(*args, **kwargs)
-        self.__instance = None
-    def __call__(self, *args, **kwargs):
-        if self.__instance is None:
-            self.__instance = super(Singleton, self).__call__(*args, **kwargs)
-        return self.__instance
 
 
 class ActorManager(ActorBase):

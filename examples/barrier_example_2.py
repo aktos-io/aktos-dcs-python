@@ -29,10 +29,17 @@ class Test(Actor):
         print "restarting...", self.time_diff()
         self.b.restart()
 
+
+    def action3(self):
+        x = Barrier()
+        print "Barrier X has been opened before close"
+        x.go()
+        x.wait()
+        print "Barrier X continues..."
 """
 Expected output:
 
-awaiting forever
+waiting forever
 adding 5 seconds to timeout 2.00101590157
 wait ends 5.00072097778
 setting again: 3 seconds 5.00075697899

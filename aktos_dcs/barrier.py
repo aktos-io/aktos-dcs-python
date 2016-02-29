@@ -2,6 +2,7 @@ __author__ = 'ceremcem'
 
 
 import gevent
+from gevent.event import Event
 import time
 
 class Barrier(object):
@@ -12,26 +13,30 @@ class Barrier(object):
         self.go_timestamp = 0
         self.tolerance_before_wait = 0.01  # seconds
         self.warning = warning
+        self.barrier_event = Event()
 
     def wait(self, timeout=None):
         self.timeout = timeout
         self.start()
+
+        if self.go_timestamp + self.tolerance_before_wait >= time.time():
+            if self.warning:
+                print "WARNING: Go signal has been gathered %f seconds before wait, but continuing anyway.." % (
+                    time.time() - self.go_timestamp
+                )
+            return True
+        else:
+            if self.warning:
+                print "WARNING: Go signal has been gathered too long before wait, not continuing!"
+
         self.barrier_closed = True
-        while self.barrier_closed:
+        while True:
             if self.timeout:
                 if (self.start_time + self.timeout) < time.time():
                     # timeout!
                     return False
-
-            if self.go_timestamp + self.tolerance_before_wait >= time.time():
-                if self.warning:
-                    print "WARNING: Go signal has been gathered %f seconds before wait, but continuing anyway.." % (
-                        time.time() - self.go_timestamp
-                    )
+            if not self.barrier_closed:
                 break
-            else:
-                if self.warning:
-                    print "WARNING: Go signal has been gathered too long before wait, not continuing!"
 
             gevent.sleep(0.0001)
 
