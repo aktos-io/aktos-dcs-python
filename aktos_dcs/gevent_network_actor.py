@@ -239,7 +239,7 @@ class ProxyActor(Actor):
         self.broker_client_send(self.introduction_msg)
         self.broker_send(self.introduction_msg)
 
-    def handle_ProxyActorMessage(self, msg_raw):
+    def manually_handle_ProxyActorMessage(self, msg_raw):
         msg = get_msg_body(msg_raw)
         print "CM delay: ", (time.time() - msg_raw['timestamp'])
         if 'new_contact_list' in msg:
@@ -295,6 +295,13 @@ class ProxyActor(Actor):
             gevent.sleep()
 
     def receive(self, msg):
+        try:
+            _ = msg["payload"]["ProxyActorMessage"]
+            self.manually_handle_ProxyActorMessage(msg)
+            return
+        except:
+            pass
+
         if self.DEBUG_NETWORK_MESSAGES:
             print "forwarding msg to network: ", msg['msg_id']
         self.server_send(msg)
@@ -409,7 +416,7 @@ class ProxyActor(Actor):
             print "forwarding msg to manager: ", msg_raw['msg_id']
         if 'ProxyActorMessage' in msg_raw['payload']:
             # handled in handle_ProxyActorMessage function
-            gevent.spawn(self.handle_ProxyActorMessage, msg_raw)
+            gevent.spawn(self.manually_handle_ProxyActorMessage, msg_raw)
         else:
             self.add_sender_to_msg(msg_raw)
             self.mgr.inbox.put(msg_raw)
