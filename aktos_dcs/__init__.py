@@ -5,6 +5,7 @@ from gevent import sleep, joinall
 from wait_all import wait_all
 from barrier import *
 from cca_signal import CcaSignal, CcaSignalLoop
+from sampling_queue import SamplingQueue
 
 if __name__ == "__main__":
     ProxyActor()

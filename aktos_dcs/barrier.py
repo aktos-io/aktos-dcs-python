@@ -44,3 +44,6 @@ class Barrier(object):
 
     def restart(self):
         self.start()
+
+    def is_waiting(self):
+        return not self.barrier_event.ready()
