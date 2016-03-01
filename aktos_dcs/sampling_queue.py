@@ -7,6 +7,8 @@ from gevent import sleep
 
 class SamplingQueue(object):
     """
+    FIFO queue with a sampling interval
+
     if an item is put this queue at a higher frequency that sample_interval
     allows, the last value in this queue is discarded and replaced with new
     value.
@@ -17,7 +19,7 @@ class SamplingQueue(object):
     if values are requested too quick, then `get()` method blocks
     execution until a sample_interval elapses, and returns last item.
     """
-    def __init__(self, sample_interval=0.033):
+    def __init__(self, sample_interval=0.033, size=0):
         object.__init__(self)
         self.__queue = []
         self.last_put_time = 0
@@ -26,13 +28,19 @@ class SamplingQueue(object):
         self.lock = BoundedSemaphore()
         self.barrier = Barrier()
         self.warnings = False
+        self.size = size
 
     def put(self, item):
         self.lock.acquire()
         if ((time.time() >= (self.last_put_time + self.sample_interval)) or
                 (len(self.__queue) == 0)):
-            self.__queue.append(item)
-            self.last_put_time = time.time()
+
+            if self.size > 0 and len(self.__queue) < self.size:
+                self.__queue.append(item)
+                self.last_put_time = time.time()
+            else:
+                self.__queue[-1] = item
+
             if self.barrier.is_waiting():
                 self.barrier.go()
         else:
@@ -50,7 +58,7 @@ class SamplingQueue(object):
                         - time.time())
                     if wait_interval > 0:
                         sleep(wait_interval)
-                x = self.__queue.pop(-1)
+                x = self.__queue.pop(1)
                 self.last_get_time = time.time()
                 return x
             except IndexError:
