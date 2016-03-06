@@ -37,14 +37,20 @@ class SamplingQueue(object):
 
 
 class SamplingBuffer(object):
-    def __init__(self, sampling_interval=0.0, initial_value=None):
+    def __init__(self, sampling_interval=None, sampling_freq=None, initial_value=None):
         """
         if value is put too fast, `get` method should limit this speed with "sample interval" parameter.
 
         if value is got too slow, `get` method should return immediately
 
         """
-        self.sampling_interval = sampling_interval
+        if sampling_interval:
+            self.sampling_interval = sampling_interval
+        elif sampling_freq:
+            self.sampling_interval = (1.0/sampling_freq)
+        else:
+            self.sampling_interval = 0.01  # 10 ms default value
+
         self.curr_val = initial_value
         self.last_timestamp = 0
         self.put_barrier = Barrier()

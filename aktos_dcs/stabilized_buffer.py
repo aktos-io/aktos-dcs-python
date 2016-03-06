@@ -3,15 +3,33 @@ __author__ = 'ceremcem'
 from barrier import Barrier
 
 class StabilizedBuffer(object):
-    def __init__(self, duration=0):
+    def __init__(self, duration=0, distance=None):
         object.__init__(self)
         self.duration = duration
         self.curr_val = None
         self.barrier = Barrier()
+        self.distance = distance
+        self.schmitt_low = None
+        self.schmitt_high = None
+
+    def set_limits(self):
+        self.schmitt_low = self.curr_val - (self.distance/2.0)
+        self.schmitt_high = self.curr_val + (self.distance/2.0)
 
     def put(self, value):
         self.curr_val = value
-        self.barrier.go()
+
+        if self.distance is not None:
+            if self.schmitt_low is None:
+                self.set_limits()
+
+            if self.schmitt_low < self.curr_val < self.schmitt_high:
+                pass
+            else:
+                self.set_limits()
+                self.barrier.go()
+        else:
+            self.barrier.go()
 
     def get(self):
         while True:
@@ -21,6 +39,7 @@ class StabilizedBuffer(object):
                 # value in this time slot, which means we have
                 # a stable value. return this value.
                 return self.curr_val
+
 
 if __name__ == "__main__":
     from gevent_actor import *
