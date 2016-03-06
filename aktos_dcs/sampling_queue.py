@@ -1,9 +1,8 @@
 __author__ = 'ceremcem'
 
 import time
-from gevent.lock import BoundedSemaphore
 from barrier import Barrier
-from gevent import sleep
+from gevent import sleep, spawn
 from gevent.queue import Queue
 
 class SamplingQueue(object):
@@ -24,6 +23,7 @@ class SamplingQueue(object):
         object.__init__(self)
         self.__queue = Queue(maxsize=maxsize)
         self.buff = SamplingBuffer(sampling_interval=sampling_interval)
+        spawn(self.action)
 
     def action(self):
         while True:
@@ -37,7 +37,7 @@ class SamplingQueue(object):
 
 
 class SamplingBuffer(object):
-    def __init__(self, sampling_interval=0, initial_value=None):
+    def __init__(self, sampling_interval=0.0, initial_value=None):
         """
         if value is put too fast, `get` method should limit this speed with "sample interval" parameter.
 
@@ -48,7 +48,7 @@ class SamplingBuffer(object):
         self.curr_val = initial_value
         self.last_timestamp = 0
         self.put_barrier = Barrier()
-        self.fine_tune_last_wait = 0.01  # seconds
+        self.fine_tune_last_wait = 0.005  # seconds
 
     def put(self, value):
         self.curr_val = value
@@ -57,7 +57,7 @@ class SamplingBuffer(object):
     def get(self):
         while True:
             remaining_time = self.last_timestamp + self.sampling_interval - time.time()
-            print "remaining time: ", remaining_time
+            #print "remaining time: ", remaining_time
             if remaining_time <= 0:
                 self.put_barrier.wait()
                 self.last_timestamp = time.time()
@@ -66,7 +66,7 @@ class SamplingBuffer(object):
                 if remaining_time > self.fine_tune_last_wait:
                     sleep(remaining_time - self.fine_tune_last_wait)
                 else:
-                    # try to wait in the last second very
+                    # try to wait in the end very precisely
                     sleep(remaining_time/2)
 
 
