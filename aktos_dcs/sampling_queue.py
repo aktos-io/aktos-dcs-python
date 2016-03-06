@@ -4,6 +4,7 @@ import time
 from gevent.lock import BoundedSemaphore
 from barrier import Barrier
 from gevent import sleep
+from gevent.queue import Queue
 
 class SamplingQueue(object):
     """
@@ -19,47 +20,53 @@ class SamplingQueue(object):
     if values are requested too quick, then `get()` method blocks
     execution until a sample_interval elapses, and returns last item.
     """
-    def __init__(self, sample_interval=0.033, size=0):
+    def __init__(self, sampling_interval=0.033, maxsize=None):
         object.__init__(self)
-        self.__queue = []
-        self.last_put_time = 0
-        self.last_get_time = None
-        self.sample_interval = sample_interval  # seconds
-        self.lock = BoundedSemaphore()
-        self.barrier = Barrier()
-        self.warnings = False
-        self.size = size
+        self.__queue = Queue(maxsize=maxsize)
+        self.buff = SamplingBuffer(sampling_interval=sampling_interval)
+
+    def action(self):
+        while True:
+            self.__queue.put(self.buff.get())
 
     def put(self, item):
-        self.lock.acquire()
-        if ((time.time() >= (self.last_put_time + self.sample_interval)) or
-                (len(self.__queue) == 0)):
+        self.buff.put(item)
 
-            if self.size > 0 and len(self.__queue) < self.size:
-                self.__queue.append(item)
-                self.last_put_time = time.time()
-            else:
-                self.__queue[-1] = item
+    def get(self):
+        return self.__queue.get()
 
-            if self.barrier.is_waiting():
-                self.barrier.go()
-        else:
-            if self.warnings:
-                print "Warning: too new sample, discarding old one..."
-            self.__queue[-1] = item
-        self.lock.release()
 
+class SamplingBuffer(object):
+    def __init__(self, sampling_interval=0, initial_value=None):
+        """
+        if value is put too fast, `get` method should limit this speed with "sample interval" parameter.
+
+        if value is got too slow, `get` method should return immediately
+
+        """
+        self.sampling_interval = sampling_interval
+        self.curr_val = initial_value
+        self.last_timestamp = 0
+        self.put_barrier = Barrier()
+        self.fine_tune_last_wait = 0.01  # seconds
+
+    def put(self, value):
+        self.curr_val = value
+        self.put_barrier.go()
 
     def get(self):
         while True:
-            try:
-                if self.last_get_time:
-                    wait_interval = (self.last_get_time + self.sample_interval
-                        - time.time())
-                    if wait_interval > 0:
-                        sleep(wait_interval)
-                x = self.__queue.pop(1)
-                self.last_get_time = time.time()
-                return x
-            except IndexError:
-                self.barrier.wait()
+            remaining_time = self.last_timestamp + self.sampling_interval - time.time()
+            print "remaining time: ", remaining_time
+            if remaining_time <= 0:
+                self.put_barrier.wait()
+                self.last_timestamp = time.time()
+                return self.curr_val
+            else:
+                if remaining_time > self.fine_tune_last_wait:
+                    sleep(remaining_time - self.fine_tune_last_wait)
+                else:
+                    # try to wait in the last second very
+                    sleep(remaining_time/2)
+
+

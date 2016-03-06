@@ -6,7 +6,7 @@ from aktos_dcs import *
 class Test1(Actor):
     def prepare(self):
         self.sampling_interval = 10
-        self.msg_buff = SamplingQueue(sampling_interval=self.sampling_interval)
+        self.msg_buff = SamplingBuffer(sampling_interval=self.sampling_interval)
 
     def action(self):
         while True:
