@@ -20,6 +20,8 @@ class ActorBase(object):
     DEBUG_INNER_MESSAGES = False
 
     def __init__(self, start_on_init=True):
+        self.prepare()
+
         self.inbox = Queue()
         gevent.signal(signal.SIGTERM, self.__cleanup)
         gevent.signal(signal.SIGINT, self.__cleanup)
@@ -141,7 +143,6 @@ class ActorBase(object):
 
     def _run(self):
         self.running = True
-        self.prepare()
 
         # fire actions
         self.action_greenlets = []
