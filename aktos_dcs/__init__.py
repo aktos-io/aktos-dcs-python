@@ -1,6 +1,7 @@
 from messages import *
 from gevent_actor import Actor, ActorManager
 from gevent_network_actor import ProxyActor
+from singleton import Singleton
 from gevent import sleep, joinall
 from wait_all import wait_all
 from barrier import *
