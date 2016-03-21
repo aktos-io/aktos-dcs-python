@@ -18,13 +18,12 @@ class Test(Actor):
         self.send({'PingMessage': {'text': "This is test actor!"}})
         
 
-if __name__ == "__main__":
-    """
-    An actor can not receive a message that he sends. 
+"""
+An actor can not receive a message that he sends.
 
-    For example, if Test actor wasn't replying the PingMessage, Pinger actor 
-    would not be able to print "Pinger got ping message". 
-    """
-        Pinger()
-        Test()
-        wait_all()
+For example, if Test actor wasn't replying the PingMessage, Pinger actor
+would not be able to print "Pinger got ping message".
+"""
+Pinger()
+Test()
+wait_all()
