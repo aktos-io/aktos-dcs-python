@@ -4,3 +4,4 @@ greenlet
 netifaces
 gevent 
 shortuuid
+MySQL-python
