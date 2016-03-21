@@ -1,6 +1,5 @@
 from aktos_dcs import * 
-from aktos_dcs_lib import * 
-import time 
+import time
 
 out = 4
 inp = 17

@@ -1,6 +1,5 @@
-import add_import_path # only for examples
-
 from aktos_dcs import *
+
 
 class Pinger(Actor):
     def action(self):

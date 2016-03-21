@@ -1,6 +1,5 @@
-import add_import_path # only for examples
-
 from aktos_dcs import *
+
 
 class Test(Actor):
     def handle_IoMessage(self, msg):
@@ -11,7 +10,6 @@ class Test(Actor):
         print("Got message: %s", msg["val"])
 
 
-if __name__ == "__main__":
-    ProxyActor(brokers="192.168.2.155:5012:5013")
-    Test()
-    wait_all()
+ProxyActor(brokers="192.168.2.155:5012:5013")
+Test()
+wait_all()

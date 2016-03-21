@@ -1,7 +1,7 @@
 __author__ = 'ceremcem'
 
 from aktos_dcs import *
-from aktos_dcs_lib import *
+
 
 class TelemetryMail(AktosTelemetryMailBase):
     def prepare(self):

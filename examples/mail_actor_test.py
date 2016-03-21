@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from aktos_dcs import *
-from aktos_dcs_lib import *
 
 # import preconfigured mail client
 from telemetry_mail import TelemetryMail

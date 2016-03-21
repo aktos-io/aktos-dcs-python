@@ -1,6 +1,5 @@
-import add_import_path # only for examples
-
 from aktos_dcs import *
+
 
 class A(Actor):
     def action(self):
@@ -11,6 +10,7 @@ class A(Actor):
 
     def handle_ReHowHotIsIt(self, msg):
         print "temperature is: ", msg["temp"]
+
 
 class Middle(Actor):
     def action(self):
@@ -27,6 +27,7 @@ class Middle(Actor):
     def handle_TemperatureSensorMessage(self, msg):
         self.real_temp = msg["degree"]
         self.sensor_reply.go()
+
 
 class TempSensor(Actor):
     def action(self):

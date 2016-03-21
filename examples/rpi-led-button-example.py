@@ -1,7 +1,4 @@
-import add_import_path # only for examples
-
 from aktos_dcs import *
-from aktos_dcs_lib import *
 
 class Test(Actor):
     def handle_IoMessage(self, msg):

@@ -1,7 +1,5 @@
-__author__ = 'ceremcem'
-import add_import_path
-
 from aktos_dcs import *
+
 
 class Test1(Actor):
     def handle_TestMessage(self, msg):

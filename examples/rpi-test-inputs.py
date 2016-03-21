@@ -1,7 +1,5 @@
-import add_import_path # only for examples
-
 from aktos_dcs import *
-from aktos_dcs_lib import *
+
 
 if __name__ == "__main__":
     input_pins = {

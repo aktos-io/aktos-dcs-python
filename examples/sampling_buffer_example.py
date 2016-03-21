@@ -1,6 +1,3 @@
-import add_import_path
-__author__ = 'ceremcem'
-
 from aktos_dcs import *
 
 class Test1(Actor):

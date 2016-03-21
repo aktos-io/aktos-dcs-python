@@ -1,5 +1,3 @@
-import add_import_path # only for examples
-
 from aktos_dcs import *
 import time
 

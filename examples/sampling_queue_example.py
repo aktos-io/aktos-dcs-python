@@ -1,7 +1,5 @@
-import add_import_path
-__author__ = 'ceremcem'
-
 from aktos_dcs import *
+
 
 class Test1(Actor):
     def prepare(self):
@@ -16,6 +14,7 @@ class Test1(Actor):
 
     def handle_LedPanelMessage(self, msg):
         self.msg_buff.put(msg["message"])
+
 
 class Test2(Actor):
     def action(self):
