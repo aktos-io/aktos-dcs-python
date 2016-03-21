@@ -8,6 +8,7 @@ from barrier import *
 from cca_signal import CcaSignal, CcaSignalLoop
 from sampling_queue import SamplingQueue, SamplingBuffer
 from stabilized_buffer import StabilizedBuffer
+from unicode_tools import * 
 
 if __name__ == "__main__":
     ProxyActor()
