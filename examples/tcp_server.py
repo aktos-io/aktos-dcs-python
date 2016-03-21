@@ -12,7 +12,7 @@ class TestHandler(TcpHandlerActor):
         i = 0
         while True:
             print "sending test data..."
-            self.socket_send("naber... (%d)\n" % i)
+            self.socket_write("naber... (%d)\n" % i)
             i += 1
             sleep(2)
 

@@ -10,7 +10,7 @@ x = TcpClient(host="localhost", port=22334, receiver=on_receive)
 try:
     print "Started sending..."
     while True:
-        x.socket_send("x"*50 + "\n")
+        x.socket_write("x"*50 + "\n")
         sleep(1)
 except:
     print "cleaning up..."
