@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+if [[ "$1" == "cd" ]]; then
+    echo $DIR
+else
+    GIT_REPO="https://github.com/aktos-io/aktos-dcs"
+    cd $DIR
+    echo "Updating aktos-dcs"
+    git pull
+    git submodule foreach git pull origin master
+    ./install-on-linux.sh
+    echo "Finished updating..."
+fi
