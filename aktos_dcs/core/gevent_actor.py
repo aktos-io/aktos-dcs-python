@@ -83,21 +83,28 @@ class ActorBase(object):
     def __cleanup(self, *args, **kwargs):
         #print "cleaning up!"
         self.running = False
-        self.cleanup()
 
         try:
-            for i in self.plc_loop_greenlets:
-                i.kill()
+            greenlets_to_kill = list()
 
-            for i in self.action_greenlets:
-                i.kill()
+            greenlets_to_kill.append(self.get_message_greenlet)
+            greenlets_to_kill += self.plc_loop_greenlets
+            greenlets_to_kill += self.action_greenlets
+            greenlets_to_kill.append(self.main_greenlet)
 
-            self.get_message_greenlet.kill()
-            self.main_greenlet.kill()
-        except:
-            print "Killed actor..."
-
-        raise GreenletExit
+            for i in greenlets_to_kill:
+                try:
+                    i.kill()
+                except GreenletExit:
+                    pass
+                except:
+                    print "Error while killing greenlet: "
+                    import traceback
+                    traceback.print_exc()
+        finally:
+            #print "Firing cleanup!!!"
+            self.cleanup()
+            raise GreenletExit
 
 
     def get_msg_id(self):
