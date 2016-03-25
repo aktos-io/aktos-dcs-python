@@ -37,6 +37,9 @@ class ActorBase(object):
         self.sem = Semaphore()
         #atexit.register(self.__cleanup)
 
+        if start_on_init:
+            self.start()
+
         # action functions, such as "action, action1, action2, ..., action999"
         self.action_funcs = []
         action_funcs_pattern = re.compile("^action_?[0-9]*$")
@@ -62,10 +65,6 @@ class ActorBase(object):
             if plc_funcs_pattern.match(f[0]):
                 self.plc_funcs.append(f[1])
 
-        self.prepare()
-
-        if start_on_init:
-            self.start()
 
     def prepare(self):
         """
@@ -76,6 +75,7 @@ class ActorBase(object):
         pass
 
     def start(self):
+        self.prepare()
         self.main_greenlet = gevent.spawn(self._run)
 
     def kill(self, *args, **kwargs):
@@ -196,11 +196,12 @@ class ActorBase(object):
 
 class Actor(ActorBase):
     def __init__(self, name=None):
-        ActorBase.__init__(self)
+        ActorBase.__init__(self, start_on_init=False)
         self.mgr = ActorManager()
         self.mgr.register(self)
         self.broadcast_inbox = self.mgr.inbox.put
         self.actor_name = name if name else self.actor_id
+        self.start()
 
     def __getattribute__(self, name):
         try:
