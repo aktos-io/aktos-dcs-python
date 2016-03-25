@@ -20,7 +20,6 @@ class ActorBase(object):
     DEBUG_INNER_MESSAGES = False
 
     def __init__(self, start_on_init=True):
-        self.prepare()
 
         self.inbox = Queue()
         gevent.signal(signal.SIGTERM, self.__cleanup)
@@ -33,8 +32,6 @@ class ActorBase(object):
         self.broadcast_inbox = dummy_broadcast
 
         self.msg_serial = 0
-        if start_on_init:
-            self.start()
         self.msg_history = []
 
         self.sem = Semaphore()
@@ -65,6 +62,10 @@ class ActorBase(object):
             if plc_funcs_pattern.match(f[0]):
                 self.plc_funcs.append(f[1])
 
+        self.prepare()
+
+        if start_on_init:
+            self.start()
 
     def prepare(self):
         """
