@@ -20,7 +20,6 @@ class ActorBase(object):
     DEBUG_INNER_MESSAGES = False
 
     def __init__(self, start_on_init=True):
-        self.prepare()
 
         self.inbox = Queue()
         gevent.signal(signal.SIGTERM, self.__cleanup)
@@ -33,12 +32,13 @@ class ActorBase(object):
         self.broadcast_inbox = dummy_broadcast
 
         self.msg_serial = 0
-        if start_on_init:
-            self.start()
         self.msg_history = []
 
         self.sem = Semaphore()
         #atexit.register(self.__cleanup)
+
+        if start_on_init:
+            self.start()
 
         # action functions, such as "action, action1, action2, ..., action999"
         self.action_funcs = []
@@ -75,6 +75,7 @@ class ActorBase(object):
         pass
 
     def start(self):
+        self.prepare()
         self.main_greenlet = gevent.spawn(self._run)
 
     def kill(self, *args, **kwargs):
@@ -202,11 +203,12 @@ class ActorBase(object):
 
 class Actor(ActorBase):
     def __init__(self, name=None):
-        ActorBase.__init__(self)
+        ActorBase.__init__(self, start_on_init=False)
         self.mgr = ActorManager()
         self.mgr.register(self)
         self.broadcast_inbox = self.mgr.inbox.put
         self.actor_name = name if name else self.actor_id
+        self.start()
 
     def __getattribute__(self, name):
         try:
