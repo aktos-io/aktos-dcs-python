@@ -11,7 +11,7 @@ class TestMicropython(SerialPortReader):
         print self.ser
 
     def send_cmd(self, cmd, s=0.5):
-        self.ser_write(cmd + "\r\n")
+        self.serial_write(cmd + "\r\n")
         sleep(s)
 
     def on_connect(self):
