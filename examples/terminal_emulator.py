@@ -11,23 +11,21 @@ class TerminalEmulator(SerialPortReader):
     def action(self):
         self.start_io_prompt()
 
-    def send_cmd(self, cmd, s=0.5):
-        self.serial_write(cmd + self.line_endings)
-        sleep(0.1)
-
     def on_disconnect(self):
-        print "\n[[ Device Physically Disconnected... ]]\n"
+        print ""
+        print "[[ Device Physically Disconnected... ]]"
+        print ""
 
     def on_connecting(self):
+        print ""
         while True:
-            print "\n[[ Waiting for Device to be physically connected... ]]\n"
-            sleep(1)
+            print "[[ Waiting for Device to be physically connected... ]]"
+            sleep(5)
 
     def on_connect(self):
-        print "\n[[ Device Physically Connected... ]]\n"
-
-        # send any command with `self.send_cmd`
-        ###self.send_cmd("hello")
+        print ""
+        print "[[ Device Physically Connected... ]]"
+        print ""
 
 TerminalEmulator(port="/dev/ttyUSB0", baud=115200)
 wait_all()
