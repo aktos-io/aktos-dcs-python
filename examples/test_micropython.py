@@ -14,8 +14,16 @@ class TestMicropython(SerialPortReader):
         self.serial_write(cmd + "\r\n")
         sleep(s)
 
+    def on_disconnect(self):
+        print "\n[[ Device Physically Disconnected... ]]\n"
+
+    def on_connecting(self):
+        while True:
+            print "\n[[ Waiting for Device to be physically connected... ]]\n"
+            sleep(1)
+
     def on_connect(self):
-        print "Connected..."
+        print "\n[[ Device Physically Connected... ]]\n"
         sleep(5)
         self.send_cmd("""import network""")
         self.send_cmd("""wlan = network.WLAN(network.STA_IF)""")
