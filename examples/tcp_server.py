@@ -2,6 +2,7 @@ from aktos_dcs import *
 
 
 class TestHandler(TcpHandlerActor):
+
     def on_connect(self):
         print "there is a connection!", self.client_id
 
