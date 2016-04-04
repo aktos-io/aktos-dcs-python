@@ -36,23 +36,20 @@ Should work on any platform, tested on:
 ## Examples
 
 1. [TESTS.md](./TESTS.md) can be considered as a short tutorial. 
-2. Serial port usage example: https://github.com/ceremcem/aktos-dcs-pyserial-example
-3. aktos-dcs-lib: https://github.com/ceremcem/aktos-dcs-lib
-4. aktos-scada as the SCADA and HMI infrastructure: https://github.com/ceremcem/aktos-scada
+2. Examples can be found in [examples](./examples) directory
+4. aktos-scada as the SCADA and HMI infrastructure: https://github.com/aktos-io/aktos-scada
 5. Qt desktop application: https://github.com/ceremcem/weighing-machine-testing
 
 ## Other Implementations
 
-1. Java: https://github.com/Canburakt/aktos-dcs-java
+1. C#: https://github.com/aktos-io/aktos-dcs-cs
 2. Node.js (in LiveScript): https://github.com/ceremcem/aktos-website/tree/master/app/modules/aktos-dcs
-3. C#: https://github.com/ceremcem/aktos-dcs-cs
+3. Java: https://github.com/Canburakt/aktos-dcs-java
 
 ## Recommended Tools and Libraries
 
 * https://github.com/ceremcem/aktos-dcs-tools : for easy remote development 
 * https://github.com/ceremcem/link-with-server : for easy proxy connection of iot devices
-* https://github.com/ceremcem/aktos-dcs-lib: library for automation projects 
-* https://github.com/ceremcem/aktos-scada: Web based SCADA system which is live at https://aktos-elektronik.com
 
 ## Install 
 
@@ -62,19 +59,19 @@ Compilations may take around 3 minutes.
 
 * install [Python 2.7.x](https://www.python.org/downloads/)
 * install http://aka.ms/vcpython27
-* clone or download aktos-dcs
+* clone repository: `git clone --recursive https://github.com/aktos-io/aktos-dcs`
 * run (double click on) "`aktos-dcs\`[install-on-windows.cmd](./install-on-windows.cmd) 
 
 #### Linux:
 
-* clone or download aktos-dcs
+* clone repository: `git clone --recursive https://github.com/aktos-io/aktos-dcs`
 * `$ cd aktos-dcs && sudo `[./install-on-linux.sh](./install-on-linux.sh) 
-
+* Whenever you need to update, run `update-aktos-dcs` in any terminal. 
 
 #### Os X - El Capitan:
 
 * Requires [homebrew](http://brew.sh/) if it's not installed already. 
-* clone or download aktos-dcs
+* clone repository: `git clone --recursive https://github.com/aktos-io/aktos-dcs`
 * `$ cd aktos-dcs && `[./install-on-osx.sh](./install-on-osx.sh) 
 
 ## Guides for further implementations
@@ -93,6 +90,6 @@ BSD License.
 
 A.K.T.O.S. Electronics, the Open Source Telemetry and Automation Systems company, Turkey
 
-info@aktos-elektronik.com
+info@aktos.io
 
-https://aktos-elektronik.com
+https://aktos.io

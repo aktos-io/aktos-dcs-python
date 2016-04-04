@@ -35,10 +35,10 @@ So, a full message should look like this:
 
 # C# Implementation Story 
 
-These steps are followed while implementing [C# port of this library](https://github.com/ceremcem/aktos-dcs-cs): 
+These steps are followed while implementing [C# port of this library](https://github.com/aktos-io/aktos-dcs-cs): 
 
 1. Create an application that can send and receive strings (eg. 'Hello' and 'Hello back!') via ZeroMQ .
-2. Install [aktos-dcs](https://github.com/ceremcem/aktos-dcs). 
+2. Install [aktos-dcs](https://github.com/aktos-io/aktos-dcs). 
 3. Edit and set `DEBUG_NETWORK_MESSAGES = True` in `aktos_dcs/gevent_actor.py` file to see the debug messages. 
 4. Run `examples/ponger.py`.
 5. Send following string (`the_raw_msg`) as is from the new implementation code and see if `broker got message` message is printed in `ponger.py`: 
@@ -62,3 +62,4 @@ These steps are followed while implementing [C# port of this library](https://gi
 11. Listen for `ponger.py`'s answers. 
 12. Move the listener (the subscriber) to a different thread (or `BackgroundWorker`). 
 13. Create `msg_id`s and `sender` id randomly. 
+14. See the commit logs: https://github.com/aktos-io/aktos-dcs-cs/commits/master
