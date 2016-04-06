@@ -43,13 +43,13 @@ Should work on any platform, tested on:
 ## Other Implementations
 
 1. C#: https://github.com/aktos-io/aktos-dcs-cs
-2. Node.js (in LiveScript): https://github.com/ceremcem/aktos-website/tree/master/app/modules/aktos-dcs
+2. Node.js (in LiveScript): https://github.com/aktos-io/aktos-website/tree/master/app/modules/aktos-dcs
 3. Java: https://github.com/Canburakt/aktos-dcs-java
 
 ## Recommended Tools and Libraries
 
-* https://github.com/ceremcem/aktos-dcs-tools : for easy remote development 
-* https://github.com/ceremcem/link-with-server : for easy proxy connection of iot devices
+* https://github.com/aktos-io/aktos-dcs-tools : for easy remote development 
+* https://github.com/aktos-io/link-with-server : for easy proxy connection of iot devices
 
 ## Install 
 
