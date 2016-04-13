@@ -17,18 +17,6 @@ class Barrier(object):
         self.barrier_event = Event()
 
     def wait(self, timeout=None):
-        """
-        if self.go_timestamp + self.tolerance_before_wait >= time.time():
-            if self.warning:
-                print "WARNING: Go signal has been gathered %f seconds before wait, but continuing anyway.." % (
-                    time.time() - self.go_timestamp
-                )
-            return True
-        else:
-            if self.warning:
-                print "WARNING: Go signal has been gathered too long before wait, not continuing!"
-        self.start()
-        """
         #print "starting event wait, timeout: ", timeout
         success = self.barrier_event.wait(timeout)
         #print "finished event wait, success: ", success
