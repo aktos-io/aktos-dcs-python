@@ -31,7 +31,7 @@ apt-get install -y libzmq3-dev || {
 #pip install -U -r requirements.txt
 while read p; do
     echo "Installing $p via easy_install"
-    sudo easy_install $p
+    sudo easy_install -U $p
 done < requirements.txt
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
