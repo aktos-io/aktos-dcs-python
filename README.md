@@ -25,6 +25,48 @@ Actors can be run concurrently
 * distributed in Local Area Network
 * distributed across networks and connected via proxies/tunnels (eg. ssh tunnel)
 
+## Sample Code
+
+This is [`pinger.py`](./examples/pinger.py)
+```
+from aktos_dcs import *
+
+class Pinger(Actor):
+    def action(self):
+        self.send_PongMessage(text="Hello ponger, this is STARTUP MESSAGE!")
+
+    def handle_PingMessage(self, msg):
+        print "Pinger got ping message: ", msg['text']
+        sleep(2)
+        self.send_PongMessage(text="Hello ponger, this is pinger1!")
+
+ProxyActor()
+Pinger()
+wait_all()
+```
+
+This is [`ponger.py`](./examples/ponger.py)
+
+```
+from aktos_dcs import *
+
+
+class Ponger(Actor):
+    def action(self):
+        self.send_PingMessage(text="Hello pinger, this is STARTUP MESSAGE!")
+
+    def handle_PongMessage(self, msg):
+        print "Ponger got pong message:", msg['text']
+        sleep(2)
+        self.send_PingMessage(text="Hello pinger, this is ponger 1!")
+
+ProxyActor(brokers="192.168.2.161:5012:5013")
+Ponger()
+wait_all()
+```
+
+These two programs can interact with eachother even they are in the same file (like [`pinger_ponger.py`](./examples/pinger_ponger.py), or they are separate processes running in the same machine (where they are taking advantage of multiple CPU cores) or they are on separate machines on the LAN (where `pinger.py` runs on a machine "192.168.2.161").
+
 ## Platforms
 
 Should work on any platform, tested on:
