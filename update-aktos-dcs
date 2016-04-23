@@ -16,6 +16,7 @@ else
     echo "Updating aktos-dcs"
     git pull
     git submodule foreach git pull origin master
-    ./install-on-linux.sh
+	read -p "Press [Enter] key to install (or update) dependencies..."
+    ./install/install-on-linux.sh
     echo "Finished updating..."
 fi

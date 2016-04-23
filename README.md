@@ -35,7 +35,7 @@ Should work on any platform, tested on:
 
 ## Examples
 
-1. [TESTS.md](./TESTS.md) can be considered as a short tutorial. 
+1. [TESTS.md](./test/TESTS.md) can be considered as a short tutorial. 
 2. Examples can be found in [examples](./examples) directory
 4. aktos-scada as the SCADA and HMI infrastructure: https://github.com/aktos-io/aktos-scada
 5. Qt desktop application: https://github.com/ceremcem/weighing-machine-testing
@@ -53,26 +53,11 @@ Should work on any platform, tested on:
 
 ## Install 
 
-Compilations may take around 3 minutes. 
+See [Install README](./install/README.md)
 
-#### Windows: 
+## Update 
 
-* install [Python 2.7.x](https://www.python.org/downloads/)
-* install http://aka.ms/vcpython27
-* clone repository: `git clone --recursive https://github.com/aktos-io/aktos-dcs`
-* run (double click on) "`aktos-dcs\`[install-on-windows.cmd](./install-on-windows.cmd) 
-
-#### Linux:
-
-* clone repository: `git clone --recursive https://github.com/aktos-io/aktos-dcs`
-* `$ cd aktos-dcs && sudo `[./install-on-linux.sh](./install-on-linux.sh) 
-* Whenever you need to update, run `update-aktos-dcs` in any terminal. 
-
-#### Os X - El Capitan:
-
-* Requires [homebrew](http://brew.sh/) if it's not installed already. 
-* clone repository: `git clone --recursive https://github.com/aktos-io/aktos-dcs`
-* `$ cd aktos-dcs && `[./install-on-osx.sh](./install-on-osx.sh) 
+Run `update-aktos-dcs` in terminal whenever you need. 
 
 ## Guides for further implementations
 
