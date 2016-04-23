@@ -28,7 +28,8 @@ Actors can be run concurrently
 ## Sample Code
 
 This is [`pinger.py`](./examples/pinger.py)
-```
+
+```py
 from aktos_dcs import *
 
 class Pinger(Actor):
@@ -47,7 +48,7 @@ wait_all()
 
 This is [`ponger.py`](./examples/ponger.py)
 
-```
+```py
 from aktos_dcs import *
 
 
