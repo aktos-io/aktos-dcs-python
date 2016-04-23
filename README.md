@@ -35,7 +35,7 @@ Should work on any platform, tested on:
 
 ## Examples
 
-1. [TESTS.md](./test/TESTS.md) can be considered as a short tutorial. 
+1. [Test README](./test/README.md) can be considered as a short tutorial. 
 2. Examples can be found in [examples](./examples) directory
 4. aktos-scada as the SCADA and HMI infrastructure: https://github.com/aktos-io/aktos-scada
 5. Qt desktop application: https://github.com/ceremcem/weighing-machine-testing
