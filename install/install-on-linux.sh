@@ -1,8 +1,11 @@
 #!/bin/bash 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [[ $(id -u) > 0 ]]; then 
 	echo "this tool needs root privileges"
-        sudo $0
+	f="$DIR/$(basename $0)"
+	echo "$f"
+        sudo $f
         exit
 fi
 
