@@ -35,17 +35,17 @@ apt-get install -y libzmq3-dev || {
 while read p; do
     echo "Installing $p via easy_install"
     sudo easy_install -U $p
-done < requirements.txt
+done < "$DIR/requirements.txt"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 echo "Adding aktos_dcs in Python Path..."
 PYTHON_MODULES="/usr/lib/python2.7/dist-packages"
-sudo ln -sf "$DIR/aktos_dcs" $PYTHON_MODULES
+sudo ln -sf "$DIR/../aktos_dcs" $PYTHON_MODULES
 
 echo "Adding update-aktos-dcs script in path..."
-sudo ln -sf "$DIR/update-aktos-dcs" /usr/bin
-chmod +x "$DIR/update-aktos-dcs"
+sudo ln -sf "$DIR/../update-aktos-dcs" /usr/bin
+chmod +x "$DIR/../update-aktos-dcs"
 
 
 
