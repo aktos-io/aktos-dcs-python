@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from aktos_dcs import *
-from aktos_dcs_lib import Qt
 Qt.initialize()
 
 
@@ -16,6 +15,7 @@ class MainWindow(Actor, Qt.QtGui.QMainWindow):
 
         # create signal-socket connections
         self.ui.say_hello.clicked.connect(self.say_hello)
+        self.ui.say_hello.
         self.ui.get_name.clicked.connect(self.get_guest_name)
         self.ui.name_input.returnPressed.connect(self.get_guest_name)
         self.ui.show_popup.clicked.connect(self.show_popup)
