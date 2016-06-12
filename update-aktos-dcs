@@ -15,7 +15,7 @@ else
     cd $DIR
     echo "Updating aktos-dcs"
     git pull
-    git submodule foreach git pull origin master
+    git submodule update --init --recursive
 	read -p "Press [Enter] key to install (or update) dependencies..."
     ./install/install-on-linux.sh
     echo "Finished updating..."
