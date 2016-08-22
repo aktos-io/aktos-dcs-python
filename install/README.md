@@ -16,7 +16,7 @@ Compilations may take around 3 minutes.
 #### Linux:
 
 * clone repository: `git clone --recursive https://github.com/aktos-io/aktos-dcs`
-* `$ cd aktos-dcs && sudo `[./install-on-linux.sh](./install-on-linux.sh) 
+* `$ cd aktos-dcs/install && sudo `[./install-on-linux.sh](./install-on-linux.sh) 
 * Whenever you need to update, run `update-aktos-dcs` in any terminal. 
 
 #### Os X - El Capitan:
