@@ -14,6 +14,7 @@ if ! hash pip; then
 	echo "python-pip is needed..."
 	apt-get install -y python-pip
 fi 
+apt-get install -y python-serial
 apt-get install -y python-dev 
 apt-get install -y libmysqlclient-dev
 apt-get install -y python-zmq
