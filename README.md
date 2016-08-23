@@ -104,7 +104,7 @@ Run `update-aktos-dcs` in terminal whenever you need.
 
 ## Guides for further implementations
 
-See:  [Developer Guide](./Developer-guide.md)
+See:  [Developer Guide](./doc/Developer-guide.md)
 
 ## Similar Projects
 
