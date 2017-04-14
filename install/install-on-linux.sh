@@ -1,6 +1,9 @@
 #!/bin/bash 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+git submodule init 
+git submodule update 
+
 if [[ $(id -u) > 0 ]]; then 
 	echo "this tool needs root privileges"
 	f="$DIR/$(basename $0)"
@@ -8,6 +11,7 @@ if [[ $(id -u) > 0 ]]; then
         sudo $f
         exit
 fi
+
 
 apt-get update
 if ! hash pip; then
