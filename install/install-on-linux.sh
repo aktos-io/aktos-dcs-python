@@ -20,7 +20,11 @@ if ! hash pip; then
 fi 
 apt-get install -y python-serial
 apt-get install -y python-dev 
+
+# some versions of debian does not have mysql repos by default
 apt-get install -y libmysqlclient-dev
+apt-get install libmariadbclient-dev
+
 apt-get install -y python-zmq
 apt-get install -y libpgm-5.1-0
 apt-get install -y libzmq3-dev || { 
